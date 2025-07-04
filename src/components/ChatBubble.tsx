@@ -1,0 +1,29 @@
+import type { Message } from "../types/types";
+
+export default function ChatBubble({
+  message,
+  userId,
+}: {
+  message: Message;
+  userId: string | null;
+}) {
+  const isMe = message.sender === userId;
+  console.log("Rendering ChatBubble:", {
+    content: message.content,
+    sender: message.sender,
+    userId,
+    isMe,
+  });
+
+  return (
+    <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+      <div
+        className={`rounded-xl px-4 py-2 max-w-xs  border border-white ${
+          isMe ? "bg-blue-600 text-white" : "bg-gray-300 text-black"
+        }`}
+      >
+        {message.content}
+      </div>
+    </div>
+  );
+}
