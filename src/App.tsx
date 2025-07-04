@@ -1,5 +1,4 @@
 // src/App.tsx
-import CryptoTest from './components/CryptoTest'
 import Messenger from './pages/Messenger'
 
 export default function App() {
