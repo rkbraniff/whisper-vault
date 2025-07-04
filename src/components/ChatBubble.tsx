@@ -18,8 +18,8 @@ export default function ChatBubble({
   return (
     <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
       <div
-        className={`rounded-xl px-4 py-2 max-w-xs  border border-white ${
-          isMe ? "bg-blue-600 text-white" : "bg-gray-300 text-black"
+        className={`rounded-xl px-4 py-2 max-w-xs border border-white ${
+          isMe ? "bg-vault-accent text-black" : "bg-gray-300 text-black"
         }`}
       >
         {message.content}
