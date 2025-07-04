@@ -9,7 +9,7 @@ export default function ChatThread({
   userId: string | null;
 }) {
   return (
-    <div className="flex flex-col space-y-2 p-4 bg-gray-800">
+    <div className="flex flex-col space-y-2 p-4 bg-vault-bg">
       {messages.map((msg, i) => (
         <ChatBubble key={i} message={msg} userId={userId} />
       ))}
