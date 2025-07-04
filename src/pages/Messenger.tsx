@@ -4,7 +4,6 @@ import ChatInput from "../components/ChatInput";
 import type { Message } from "../types/types";
 import { getOrCreateIdentityKeyPair } from "../crypto/crypto";
 import sodium from "libsodium-wrappers";
-import ChatBubble from "../components/ChatBubble";
 
 export default function Messenger() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -35,15 +34,6 @@ export default function Messenger() {
     <div className="flex flex-col h-screen bg-vault-bg">
       <div className="flex-1 overflow-y-auto">
         <ChatThread messages={messages} userId={userId} />
-        <ChatBubble
-          message={{
-            id: "1",
-            content: "Hello bubble test",
-            sender: userId ?? "me",
-            timestamp: Date.now(),
-          }}
-          userId={userId}
-        />
       </div>
       <ChatInput onSend={handleSend} />
     </div>

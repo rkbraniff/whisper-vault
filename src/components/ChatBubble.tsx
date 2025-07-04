@@ -8,12 +8,6 @@ export default function ChatBubble({
   userId: string | null;
 }) {
   const isMe = message.sender === userId;
-  console.log("Rendering ChatBubble:", {
-    content: message.content,
-    sender: message.sender,
-    userId,
-    isMe,
-  });
 
   return (
     <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>

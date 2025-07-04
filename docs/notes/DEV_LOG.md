@@ -24,3 +24,12 @@
   - Build failed initially due to Tailwind v4 plugin changes. Installed `@tailwindcss/postcss` and `@tailwindcss/nesting`.
 - **Next Steps**: Refine theme, create reusable components, and explore Express backend.
 
+## 2025-07-04 Cleanup and Build Fixes
+- **Purpose**: Address feedback on previous PR and fix build warnings.
+- **Key Decisions**:
+  - Removed temporary `ChatBubble` example from `Messenger` page.
+  - Deleted debug `console.log` from `ChatBubble` component.
+  - Replaced `@apply text-white` in `index.css` with standard CSS to avoid Tailwind errors.
+- **Challenges or Edge Cases**: Tailwind v4 strict mode flagged unknown utilities when using `@apply`.
+- **Next Steps**: Continue refining UI components and document server requirements.
+
