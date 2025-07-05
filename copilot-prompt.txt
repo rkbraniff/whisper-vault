@@ -1,0 +1,157 @@
+# WhisperVault • UI and UX Specification
+# Parsed by GitHub Copilot (GPT-4.1)
+
+OVERVIEW
+• Build a dark-themed, privacy-focused messaging app that feels like a cathedral hidden in a server farm.
+• Tech stack: React 18, TypeScript, TailwindCSS, framer-motion for micro-animations.
+• Accessibility AA minimum. Respect prefers-reduced-motion.
+
+COLOR PALETTE
+• background-primary: #0C0C0C  (obsidian black)
+• accent-violet:     #5E4B8B  (deep violet)
+• accent-ember:      #F5C97E  (soft ember)
+• text-primary:      #E0E0E0  (pale gray)
+
+TYPOGRAPHY
+• Headings: Cinzel or Unica One, weight 600-700.
+• Body:     Inter or Cormorant Garamond, weight 400-500.
+
+GLOBAL STYLES
+• Apply subtle noise texture overlay to body element.
+• Default to dark mode. Provide class-based light-mode override but keep styling minimal.
+• Buttons use accent-violet background with ember focus ring.
+
+ANIMATION GUIDELINES
+• Page transitions: opacity fade plus 8-12 px slide-up from bottom using framer-motion.
+• Hover states: slow pulse scale 1.03 and ember glow (box-shadow 0 0 8px #F5C97E at 35 percent opacity).
+• Disable non-essential motion when prefers-reduced-motion is true.
+
+COMPONENT MAP
+1. <VaultGate />            : Landing lock screen
+   - Sigil-based login: text field, password field, optional gesture canvas placeholder
+   - “Rite Mode” boolean toggle for ceremonial login (stretch goal)
+
+2. <Dashboard />            : Chamber View
+   - Three resizable panes in CSS grid
+        • WhispersPane       : message threads
+        • SigilsPane         : contacts by trust circle
+        • KeysLocksPane      : encryption settings
+   - Floating Action Button “Send a Whisper”
+
+3. <ThreadView />           : individual conversation
+   - Messages render as <GlyphMessage /> components
+        • Encrypted state: blurred filter until hovered or focus-clicked
+        • Metadata popover on hover: timestamp, location ghost, encryption strength
+
+4. <Composer />             : write message
+   - Textarea, optional voice-to-text button, realtime character count
+   - “Seal This Message” action: triggers lock animation and sets `sealed=true`
+
+ADVANCED FEATURES (make stub components then iterate)
+• <BlackoutGuard />   : Mirror-wall emergency overlay, triggered by global context
+• <DeadDropConfig />  : Time-delayed delivery, one-time view, auto-delete
+• <SigilRoom />       : Group chat component with aura-ring trust indicator
+• <NightwatchLayer /> : Activates after user-idle timeout, shrinks UI, dims lights
+• <VaultEcho />       : React Portal that shimmers referenced past messages
+
+STATE MANAGEMENT
+• Use Zustand or Context API for auth, theme, and encryption key cache.
+• Persist encrypted local storage via `crypto.subtle` for keys only.
+
+TESTING
+• Unit tests with Vitest + React Testing Library.
+• E2E with Playwright covering login flow, message seal flow, blackout toggle.
+
+FILE STRUCTURE (suggested)
+src/
+├─ components/
+│  ├─ VaultGate.tsx
+│  ├─ Dashboard/
+│  │   ├─ index.tsx
+│  │   ├─ WhispersPane.tsx
+│  │   ├─ SigilsPane.tsx
+│  │   └─ KeysLocksPane.tsx
+│  ├─ ThreadView/
+│  │   ├─ index.tsx
+│  │   └─ GlyphMessage.tsx
+│  └─ Composer.tsx
+├─ features/
+│  ├─ blackout/
+│  ├─ dead-drop/
+│  └─ nightwatch/
+├─ hooks/
+├─ store/
+└─ styles/
+
+CODE STYLE
+• Prettier + ESLint (airbnb-typescript) with 100 column max.
+• Commit hooks via Husky.
+
+INSTRUCTIONS FOR COPILOT
+• Generate Tailwind utility classes, avoid inline styles.
+• Break large components into logical children no longer than 120 lines each.
+• Add JSDoc comments to all public functions.
+• Whenever you create a component, also generate a matching test stub.
+• At end of generation, append a concise markdown changelog.
+
+END OF SPEC
+
+# Whisper Vault • 1-Day Work Orders
+# Date: 2025-07-05
+
+MISSION
+Clean the repository, lock line endings, and ignite the visual theme. Focus only on P0 and P1 tasks. Leave deeper architecture and testing for tomorrow.
+
+TASKS
+1. REPO PURGE
+   • Delete redundant folders `whisper-vault/` and `whisper-vault-backup/`.
+   • Move canonical source into root `src/` with Vite structure intact.
+   • Commit message: "chore: remove duplicate trees, unify source of truth".
+
+2. LINE-ENDING DOCTRINE
+   • Add `.gitattributes`:
+       * text=auto eol=lf
+   • Run `git add --renormalize .` and commit
+     "chore: enforce LF endings repo-wide".
+
+3. BRAND THEME
+   • Run `npx tailwindcss init -p`.
+   • Edit `tailwind.config.ts`:
+
+     ```ts
+     export default {
+       darkMode: 'class',
+       theme: {
+         extend: {
+           colors: {
+             obsidian: '#0C0C0C',
+             violetDeep: '#5E4B8B',
+             emberSoft: '#F5C97E',
+             textPale: '#E0E0E0'
+           },
+           fontFamily: {
+             heading: ['Cinzel', 'serif'],
+             body: ['Inter', 'sans-serif']
+           }
+         }
+       }
+     };
+     ```
+
+   • Refactor hard-coded colors in `ChatBubble.tsx`, `Messenger.tsx`, etc. Use Tailwind utility classes that reference the new palette.
+   • Commit: "feat: centralize theme in Tailwind config".
+
+4. README SPARK
+   • Expand `README.md` with:
+       – one-command setup
+       – tech stack bullets
+       – architecture diagram link placeholder
+       – contribution guidelines.
+   • Commit: "docs: flesh out project overview".
+
+GROUND RULES
+• No new features, only cleanup and theme wiring.
+• Keep commit messages in imperative mood, max 50 chars headline.
+• Run `npm run dev` after each task to catch UI regressions early.
+
+END
