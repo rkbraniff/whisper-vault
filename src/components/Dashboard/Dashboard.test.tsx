@@ -16,9 +16,9 @@ describe('Dashboard', () => {
         fab={<SendWhisperFAB />}
       />
     );
-    expect(getByText('Whispers')).toBeInTheDocument();
-    expect(getByText('Sigils')).toBeInTheDocument();
-    expect(getByText('Keys & Locks')).toBeInTheDocument();
-    expect(getByLabelText('Send a Whisper')).toBeInTheDocument();
+    expect(getByText('Whispers')).toBeTruthy();
+    expect(getByText('Sigils')).toBeTruthy();
+    expect(getByText('Keys & Locks')).toBeTruthy();
+    expect(getByLabelText('Send a Whisper')).toBeTruthy();
   });
 });

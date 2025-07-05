@@ -1,0 +1,115 @@
+# Whisper Vault • Sprint Plan
+# Audience: GitHub Copilot 4.1  •  Goal: green tests → key storage → socket glue → server scaffold
+
+════════════════════════════════════════
+P-0  –  GREEN EVERY TEST
+════════════════════════════════════════
+1. create vitest.config.ts
+   import { defineConfig } from 'vitest/config';
+   export default defineConfig({
+     test: { globals: true, environment: 'jsdom', setupFiles: ['./vitest.setup.ts'] }
+   });
+
+2. create vitest.setup.ts
+   import '@testing-library/jest-dom/vitest';
+   import 'fake-indexeddb/auto';
+
+3. fix cipher.test.ts
+   • encode plaintext with new TextEncoder().encode('hello')
+   • mutate ciphertext[0] ^= 0xff for tamper test
+
+4. React tests
+   • use screen.getAllByRole('textbox')[0] (avoids “multiple elements”)
+   • jest-dom already loaded for toBeInTheDocument
+
+5. add script to root package.json
+   "test": "vitest run"
+
+6. run `npx vitest run` until √ 0 fail
+
+7. commit
+   git add vitest.config.ts vitest.setup.ts src/**/*.test.* package.json
+   git commit -m "test: green vitest suites (jsdom + fake-indexeddb)"
+
+════════════════════════════════════════
+P-1  –  KEY STORAGE & SOCKET CLIENT
+════════════════════════════════════════
+8. src/crypto/storage.ts  (idb)
+   import { openDB } from 'idb';
+   let db;
+   const getDB = () => db ??= openDB('whisper-vault',1,{upgrade(db){db.createObjectStore('keys');}});
+   export const saveKey = async (id,k)=> (await getDB()).put('keys',k,id);
+   export const loadKey = async id   => (await getDB()).get('keys',id) as Uint8Array|undefined;
+
+9. src/lib/socket.ts
+   import { io } from 'socket.io-client';
+   export const socket = io(import.meta.env.VITE_API_URL);
+   export const sendWhisper = (to,nonce,data)=> socket.emit('whisper:send',{to,nonce,data});
+   export const onWhisper  = cb => socket.on('whisper:recv',cb);
+
+10. commit
+    git add src/crypto/storage.ts src/lib/socket.ts
+    git commit -m "feat: browser key storage + socket glue"
+
+════════════════════════════════════════
+P-2  –  BACK-END SCAFFOLD  (server/)
+════════════════════════════════════════
+11. mkdir server && cd server && npm init -y
+12. deps:
+    npm i express socket.io cors helmet dotenv zod @prisma/client
+    npm i -D typescript ts-node-dev prisma @types/express @types/node
+    npx tsc --init
+    npx prisma init
+
+13. server/src/index.ts
+    • Express app with CORS+Helmet
+    • routes /api/keys  /api/messages  (stubs)
+    • Socket.IO relay
+      io.on('connection',s=>s.on('whisper:send',p=>io.to(p.to).emit('whisper:recv',{...p,from:s.id})));
+
+14. prisma/schema.prisma  (User, Message)  
+    npx prisma migrate dev --name init
+
+15. server/package.json scripts
+    "dev":   "ts-node-dev --respawn --exit-child src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+
+16. commit
+    git add server
+    git commit -m "chore: scaffold Node/Express/Socket.IO server"
+
+════════════════════════════════════════
+P-3  –  README + CI
+════════════════════════════════════════
+17. README.md
+    • Quick-start web:  npm i && npm run dev
+    • Quick-start api:  cd server && npm i && npm run dev
+    • Tailwind v4 note: single @import "tailwindcss"
+    • libsodium-sumo + TS shim explanation
+
+18. .github/workflows/ci.yml
+    name: CI
+    on: [push, pull_request]
+    jobs:
+      test:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v4
+          - uses: pnpm/action-setup@v2
+            with: { version: 8 }
+          - run: pnpm install
+          - run: pnpm test
+
+19. final push
+    git add README.md .github
+    git commit -m "docs+ci: update README and add CI"
+    git push origin main
+
+════════════════════════════════════════
+CONSTRAINTS
+════════════════════════════════════════
+• TypeScript strict mode.  
+• Always `import sodium from 'libsodium-wrappers-sumo';`.  
+• No console logging of secret material.  
+• Keep files ≤120 lines.

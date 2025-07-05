@@ -13,11 +13,11 @@ describe('ThreadView', () => {
 
   it('renders empty state when no messages', () => {
     const { getByText } = render(<ThreadView messages={[]} userId="user-123" />);
-    expect(getByText('No Whispers Yet')).toBeInTheDocument();
+    expect(getByText('No Whispers Yet')).toBeTruthy();
   });
 
   it('renders messages as GlyphMessage', () => {
     const { getByText } = render(<ThreadView messages={[baseMessage]} userId="user-123" />);
-    expect(getByText('Test glyph')).toBeInTheDocument();
+    expect(getByText('Test glyph')).toBeTruthy();
   });
 });

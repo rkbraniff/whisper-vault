@@ -7,11 +7,14 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run"
   },
   "dependencies": {
     "framer-motion": "^12.23.0",
+    "idb": "^8.0.3",
     "libsodium-wrappers": "^0.7.15",
+    "libsodium-wrappers-sumo": "^0.7.15",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "socket.io-client": "^4.8.1",
@@ -25,6 +28,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
     "@types/libsodium-wrappers": "^0.7.14",
+    "@types/libsodium-wrappers-sumo": "^0.7.8",
     "@types/node": "^24.0.3",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
@@ -35,6 +39,7 @@
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
+    "fake-indexeddb": "^6.0.1",
     "globals": "^16.0.0",
     "init": "^0.1.2",
     "jsdom": "^26.1.0",

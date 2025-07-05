@@ -1,0 +1,71 @@
+# Whisper Vault • Next-Move Sprint
+# Audience: GitHub Copilot (GPT-4.1) • Scope: Crypto wrap-up, storage, sockets, server scaffold
+# Keep THIS file open while coding.
+
+GOAL  
+Finish the client-side crypto layer, wire persistent key storage, add a thin
+Socket.IO glue, and bootstrap the back-end workspace. Commit everything cleanly.
+
+TIMELINE  
+Sprint size ≈ 3 hours, split into P-0, P-1, P-2 buckets.
+
+─────────────────
+P-0 TASKS  (critical, do first)
+─────────────────
+1. **Commit current crypto helpers**
+   • Files: `src/crypto/{identity.ts, session.ts, cipher.ts}`
+   • Shim:  `src/types/libsodium-wrappers-sumo.d.ts`
+   • Lock:  `package*.json`
+   • Msg :  `feat: crypto core (identity, session, cipher) with libsodium-sumo`
+2. **Unit test stubs with Vitest**
+   • `identity.spec.ts` → key lengths.
+   • `cipher.spec.ts`   → encrypt → decrypt round-trip.
+   • Add script `"test": "vitest run"` to root `package.json`.
+
+─────────────────
+P-1 TASKS  (storage & sockets)
+─────────────────
+3. **Key persistence in the browser**
+   • Create `src/crypto/storage.ts` using `idb`.
+   • API:
+     - `saveKey(id: string, key: Uint8Array): Promise<void>`
+     - `loadKey(id: string): Promise<Uint8Array | null>`
+4. **Socket.IO client glue**
+   • `src/lib/socket.ts` exports a singleton:
+     ```ts
+     import { io } from 'socket.io-client';
+     export const socket = io(import.meta.env.VITE_API_URL);
+     ```
+   • Add helpers:
+     - `sendWhisper(to, nonceB64, cipherB64)`
+     - `onWhisper(callback)`
+   • Use Base64URL (`sodium.to_base64(..., sodium.base64_variants.URLSAFE_NO_PADDING)`).
+
+─────────────────
+P-2 TASKS  (back-end scaffold)
+─────────────────
+5. **Create `server/` workspace**
+   ```bash
+   mkdir server && cd server
+   npm init -y
+   npm i express socket.io cors helmet dotenv zod @prisma/client
+   npm i -D typescript ts-node-dev prisma @types/express @types/node
+   npx tsc --init
+   npx prisma init
+
+─────────────────
+P-3 TASK (docs)
+─────────────────
+9. README quick-start update
+• Add install + dev commands for both web and server.
+• Note Tailwind v4 single @import "tailwindcss" rule.
+• Document libsodium-sumo shim.
+
+CONSTRAINTS
+• TypeScript strict mode everywhere.
+• Keep each source file ≤120 lines.
+• Use default import: import sodium from 'libsodium-wrappers-sumo';.
+• Encode secrets as Base64URL only at IO edges.
+• No console-logging secret material.
+
+END OF SPEC
