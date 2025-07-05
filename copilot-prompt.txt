@@ -155,3 +155,89 @@ GROUND RULES
 • Run `npm run dev` after each task to catch UI regressions early.
 
 END
+
+# Whisper Vault • Backend Scaffolding Guide
+# Scope: Node 22 · TypeScript 5 · Express 5 · Socket.IO 4 · Prisma/PostgreSQL
+# Parsed by GitHub Copilot (GPT-4.1)
+
+GOAL
+Spin up the server workspace that pairs with the React front-end.
+Deliver a working Express + Socket.IO API, Prisma schema, and dev script.
+
+FOLDER LAYOUT
+server/
+├─ src/
+│  ├─ index.ts                    # Express + Socket.IO entry
+│  ├─ routes/
+│  │  ├─ auth.ts
+│  │  ├─ messages.ts
+│  │  └─ keys.ts
+│  ├─ controllers/                # empty stubs
+│  ├─ middleware/                 # empty stubs
+│  └─ sockets/
+│      └─ chat.ts
+├─ prisma/
+│  └─ schema.prisma
+├─ .env.example
+├─ tsconfig.json
+├─ package.json
+└─ README.md
+
+NPM SCRIPTS
+"dev"            -> ts-node-dev --respawn --exit-child src/index.ts
+"build"          -> tsc
+"start"          -> node dist/index.js
+"prisma:generate"-> prisma generate
+"prisma:migrate" -> prisma migrate dev
+
+DEPENDENCIES
+runtime:  express socket.io cors helmet dotenv zod @prisma/client
+dev    :  typescript ts-node-dev prisma @types/express @types/node
+
+BOOTSTRAP COMMANDS
+mkdir server && cd server
+npm init -y
+npm install express socket.io cors helmet dotenv zod @prisma/client
+npm install -D typescript ts-node-dev prisma @types/express @types/node
+npx tsc --init
+npx prisma init
+
+ENTRY FILE (src/index.ts)
+- import dotenv/config, express, http, socket.io, cors, helmet
+- mount routers: /api/auth, /api/messages, /api/keys
+- create http server, bind Socket.IO, pass CORS origin from .env
+- call registerChatHandlers(io, socket)
+
+SOCKET HANDLER (src/sockets/chat.ts)
+- on "whisper:send" relay to target "whisper:recv"
+- log disconnect
+
+ROUTES
+routes/messages.ts
+- POST / -> zod validate {senderId, receiverId, ciphertext, nonce}
+- persist via Prisma (TODO) then res.status(201)
+
+PRISMA SCHEMA (prisma/schema.prisma)
+model User   { id String @id @default(uuid()) email String @unique pubKey String @unique messages Message[] @relation("msg_sender") received Message[] @relation("msg_receiver") }
+model Message{ id Int @id @default(autoincrement()) sender   User @relation("msg_sender", fields:[senderId], references:[id]) senderId String receiver User @relation("msg_receiver", fields:[receiverId], references:[id]) receiverId String ciphertext String nonce String createdAt DateTime @default(now()) }
+
+ENV VARS (.env.example)
+DATABASE_URL=postgresql://user:pass@localhost:5432/whispervault
+CLIENT_ORIGIN=http://localhost:5173
+PORT=4000
+
+TASK LIST
+1. create server workspace and install deps
+2. add tsconfig, .env.example, prisma/schema.prisma
+3. implement src/index.ts, routes, sockets
+4. add npm scripts to package.json
+5. run: npx prisma generate && npx prisma migrate dev --name init
+6. start dev server: npm run dev
+7. expose socket url to front-end via VITE_API_URL
+
+STYLE
+- Use ES modules (type=module) everywhere
+- Wrap controller logic in async-handlers with try/catch
+- Keep each source file under 120 lines
+
+END OF SPEC

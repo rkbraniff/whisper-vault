@@ -66,7 +66,7 @@ export default function ChatBubble({
         {/* Main Message Scroll */}
         <div
           className={[
-            "relative rounded-2xl px-5 py-4 shadow-xl ring-1 ring-inset ring-obsidian/40 transition-all duration-500 ease-in-out font-whisper",
+            "relative rounded-2xl px-5 py-4 mx-4 my-2 shadow-xl ring-1 ring-inset ring-obsidian/40 transition-all duration-500 ease-in-out font-whisper",
             "hover:shadow-ember-glow",
             isMe
               ? "bg-gradient-to-br from-ember/90 via-ember-dim/80 to-obsidian/80 text-obsidian border border-ember/40"

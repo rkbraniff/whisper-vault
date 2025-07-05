@@ -1,0 +1,18 @@
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  pubKey    String   @unique
+  messages  Message[] @relation("msg_sender")
+  received  Message[] @relation("msg_receiver")
+}
+
+model Message {
+  id          Int      @id @default(autoincrement())
+  sender      User     @relation("msg_sender", fields: [senderId], references: [id])
+  senderId    String
+  receiver    User     @relation("msg_receiver", fields: [receiverId], references: [id])
+  receiverId  String
+  ciphertext  String
+  nonce       String
+  createdAt   DateTime @default(now())
+}

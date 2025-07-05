@@ -13,7 +13,7 @@ export default function ChatThread({
   userId: string | null;
 }) {
   return (
-    <div className="flex-1 flex flex-col min-h-0">
+    <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
       {/* Cathedral Atmosphere Effects */}
       <div className="absolute inset-0 bg-gradient-to-br from-violet-deep/5 via-transparent to-ember/5 pointer-events-none" />
       <div className="absolute inset-0 opacity-10 bg-gradient-to-t from-whisper-dim/5 to-transparent pointer-events-none" />
@@ -43,7 +43,7 @@ export default function ChatThread({
             </div>
           </div>
         ) : (
-          <div className="flex flex-col space-y-4">
+          <div className="flex flex-col space-y-4 overflow-y-auto">
             {messages.map((msg) => (
               <ChatBubble key={msg.id} message={msg} userId={userId} />
             ))}

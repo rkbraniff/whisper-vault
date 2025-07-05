@@ -1,0 +1,18 @@
+/* src/index.css  — Tailwind v4 pattern                                */
+/* (If you renamed the file, adjust the comment and import path)       */
+
+/* Load the entire Tailwind framework (v4 collapsed layers) */
+@import "tailwindcss";
+
+/* Load brand web-fonts */
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500&display=swap");
+
+/* Global page styling with your theme tokens */
+html,
+body {
+  /* pull tokens directly from tailwind.config.js */
+  background-color: var(--color-obsidian);
+  color:            var(--color-text-pale);
+  font-family:      var(--font-body);
+  min-height: 100%;
+}
