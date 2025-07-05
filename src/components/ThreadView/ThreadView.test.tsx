@@ -1,4 +1,5 @@
 import { render } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
 import ThreadView from './index';
 import type { Message } from '../../types/types';
 
