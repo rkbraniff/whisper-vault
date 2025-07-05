@@ -1,0 +1,59 @@
+# Whisper Vault • Crypto-Core Extension
+# Audience: GitHub Copilot (GPT-4.1) • Scope: End-to-End Encryption & Key Handling
+# Keep this file open while you generate code.
+
+GOAL
+Upgrade the existing libsodium-based helpers to a full E2E toolkit:
+1. X25519 identity + session key pairs
+2. XChaCha20-Poly1305 symmetric encryption helpers
+3. Secure key storage (browser: IndexedDB | server: Prisma/Postgres)
+4. Key rotation & outbound session box creation
+5. Type-safe API surface for both front-end and back-end
+
+CONSTRAINTS
+• Use **libsodium-wrappers-scrypt** in the browser, **libsodium** (native) on Node.  
+• All functions **async** (wrappers may await libsodium.ready).  
+• Return **Uint8Array** for raw keys and ciphertext; convert to base64url only at IO boundaries.  
+• Do not leak secrets to console logs.  
+• Keep each source file <120 lines, export re-usable, pure helpers.  
+• TypeScript strict mode, ES modules.
+
+CODE LAYOUT
+server/
+└─ src/
+   └─ crypto/
+      ├─ identity.ts      # generate/load identity keys
+      ├─ session.ts       # establish sender → receiver shared key
+      ├─ cipher.ts        # encrypt/decrypt helpers
+      ├─ storage.ts       # save/load keys (Node uses Prisma client)
+      └─ index.ts         # barrel export
+
+TASKS FOR COPILOT
+1. **identity.ts**
+   - `generateIdentity() : Promise<{ publicKey: Uint8Array, privateKey: Uint8Array }>`  
+   - `importIdentity(base64PrivKey) : { publicKey, privateKey }`
+
+2. **session.ts**
+   - `deriveSharedKey(senderPriv, receiverPub) : Uint8Array`  
+   - `rotateEphemeral(senderPriv) : { newPriv, newPub }`
+
+3. **cipher.ts**
+   - `encrypt(sharedKey, plaintext) : { nonce, ciphertext }`  
+   - `decrypt(sharedKey, nonce, ciphertext) : Uint8Array`
+
+4. **storage.ts**
+   - `saveKey(id: string, key: Uint8Array)`  
+   - `loadKey(id: string) : Uint8Array | null`
+
+5. **index.ts** re-exports everything.
+
+EXAMPLE USAGE (browser)
+```ts
+import { generateIdentity, deriveSharedKey, encrypt, decrypt } from './crypto';
+
+const me = await generateIdentity();
+await saveKey('me', me.privateKey);
+
+const shared = deriveSharedKey(me.privateKey, friendPubKey);
+const { nonce, ciphertext } = encrypt(shared, new TextEncoder().encode("hello"));
+socket.emit('whisper:send', { to: friendId, nonce: b64(nonce), data: b64(ciphertext) });

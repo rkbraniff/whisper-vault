@@ -1,22 +1,22 @@
-import { render, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import Composer from './Composer';
 
-describe('Composer', () => {
-  it('renders textarea and seal button', () => {
-    const { getByPlaceholderText, getByLabelText } = render(<Composer onSend={() => {}} />);
-    expect(getByPlaceholderText(/entrust to the vault/i)).toBeInTheDocument();
-    expect(getByLabelText('Seal This Message')).toBeInTheDocument();
+describe('<Composer />', () => {
+  it('renders textarea and send button', () => {
+    render(<Composer onSend={() => {}} />);
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByRole('button')).toBeInTheDocument();
   });
 
-  it('calls onSend when message is sealed', () => {
-    const onSend = jest.fn();
-    const { getByLabelText } = render(<Composer onSend={onSend} />);
-    const textarea = getByLabelText('Seal This Message').closest('div')?.querySelector('textarea');
-    expect(textarea).not.toBeNull();
-    fireEvent.change(textarea as HTMLTextAreaElement, { target: { value: 'Secret' } });
-    fireEvent.click(getByLabelText('Seal This Message'));
-    setTimeout(() => {
-      expect(onSend).toHaveBeenCalledWith('Secret');
-    }, 700);
+  it('calls onSend with message', async () => {
+    const onSend = vi.fn();
+    render(<Composer onSend={onSend} />);
+    const textarea = screen.getByRole('textbox');
+    fireEvent.change(textarea, { target: { value: 'test message' } });
+    fireEvent.click(screen.getByRole('button'));
+    // Wait for any async animation or debounce
+    await new Promise(r => setTimeout(r, 700));
+    expect(onSend).toHaveBeenCalledWith('test message');
   });
 });
