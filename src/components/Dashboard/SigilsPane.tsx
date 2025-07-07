@@ -1,12 +1,42 @@
+import React from 'react';
+
 /**
  * SigilsPane - Contacts/trust circles for Dashboard
  * Placeholder for now
  */
-export default function SigilsPane() {
+const SigilsPane: React.FC = () => {
+  // TODO: Replace with real contacts API later
+  const contacts: { id: string; name: string }[] = [];
   return (
-    <div className="flex-1 flex flex-col p-6">
-      <h2 className="font-sigil text-xl text-violet-deep mb-4">Sigils</h2>
-      <div className="text-whisper-dim font-ritual">(Contacts and trust circles will appear here)</div>
-    </div>
+    <section
+      className="rounded-2xl bg-obsidian-light/60 border border-violetDeep/30 shadow-xl p-6"
+      aria-label="Sigils"
+    >
+      <div className="text-lg font-semibold mb-4">Sigils</div>
+      <ul className="space-y-2">
+        {contacts.length === 0 ? (
+          <li className="text-whisper-dim">No contacts yet.</li>
+        ) : (
+          contacts.map((contact) => (
+            <li key={contact.id}>
+              <button
+                className="w-full text-left rounded-lg px-3 py-2 hover:bg-violetDeep/10 focus:outline-none focus:ring-2 focus:ring-ember transition"
+                aria-label={`Open contact: ${contact.name}`}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    /* TODO: open contact */
+                  }
+                }}
+              >
+                <div className="font-semibold truncate">{contact.name}</div>
+              </button>
+            </li>
+          ))
+        )}
+      </ul>
+    </section>
   );
-}
+};
+
+export default SigilsPane;
