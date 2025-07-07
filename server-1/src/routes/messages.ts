@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { prisma } from '../../prisma/client'; // Adjust the import based on your Prisma client setup
+import { prisma } from '../lib/prisma.js';
 
 const router = Router();
 
