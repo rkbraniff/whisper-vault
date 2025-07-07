@@ -6,18 +6,18 @@ import type { Message } from '../../types/types';
 describe('ThreadView', () => {
   const baseMessage: Message = {
     id: '1',
-    sender: 'user-123',
+    sender: 'user',
     content: 'Test glyph',
     timestamp: Date.now(),
   };
 
   it('renders empty state when no messages', () => {
-    const { getByText } = render(<ThreadView messages={[]} userId="user-123" />);
+    const { getByText } = render(<ThreadView messages={[]} userId="user" />);
     expect(getByText('No Whispers Yet')).toBeTruthy();
   });
 
   it('renders messages as GlyphMessage', () => {
-    const { getByText } = render(<ThreadView messages={[baseMessage]} userId="user-123" />);
+    const { getByText } = render(<ThreadView messages={[baseMessage]} userId="user" />);
     expect(getByText('Test glyph')).toBeTruthy();
   });
 });

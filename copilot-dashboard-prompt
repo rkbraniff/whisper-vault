@@ -1,0 +1,102 @@
+# Whisper Vault • Main Dashboard Sprint
+# Audience: GitHub Copilot 4.1
+# Goal: ship the landing “Chamber View” page users see before opening threads.
+
+════════════════════════════════════════
+A. FILE & ROUTER SKELETON
+════════════════════════════════════════
+1. Create  src/pages/Dashboard.tsx
+2. Add four children components:
+   ├─ src/components/Dashboard/WhispersPane.tsx
+   ├─ src/components/Dashboard/SigilsPane.tsx
+   ├─ src/components/Dashboard/KeysLocksPane.tsx
+   └─ src/components/Dashboard/SendWhisperFAB.tsx
+3. Update  src/App.tsx (or router)  
+   • route “/” → <Dashboard />  
+   • keep “/thread/:id” → <ThreadView />
+
+════════════════════════════════════════
+B. UI SPEC  (Tailwind v4)
+════════════════════════════════════════
+Dashboard  = responsive CSS grid  
+```tsx
+<div className="grid lg:grid-cols-3 gap-6 p-6 lg:p-8">
+  <WhispersPane className="col-span-2" />
+  <SigilsPane  />
+  <KeysLocksPane className="lg:col-span-3" />
+  <SendWhisperFAB />
+</div>
+````
+
+• Dark by default (`bg-obsidian text-textPale`).
+• Sub-cards: rounded-2xl, `bg-obsidian-light/60 border border-violetDeep/30 shadow-xl`.
+• Animate mount with framer-motion: `fadeInUp`.
+
+════════════════════════════════════════
+C. COMPONENT CONTRACTS
+════════════════════════════════════════
+WhispersPane
+props: none (fetch mock messages)
+shows last 10 threads, each clickable (navigate to /thread/\:id).
+SigilsPane
+props: none (list of contacts, query later API).
+KeysLocksPane
+shows “Identity Key” (first 6 chars…last 6 chars) and button “Export PubKey”.
+SendWhisperFAB
+fixed-bottom-right, pulsating ember glow, onClick → open /thread/new (stub).
+
+════════════════════════════════════════
+D. SAMPLE MOCK DATA
+════════════════════════════════════════
+Put in  src/mocks/threads.ts
+
+```ts
+export const mockThreads = [
+  { id:'1', title:'Ezekiel • Midnight Pact', last:'The veil is thin…', ts:Date.now() },
+  { id:'2', title:'Selene • Artifact drop',   last:'Delivered.',        ts:Date.now()-900000 }
+];
+```
+
+════════════════════════════════════════
+E. TESTS  (Vitest + Testing Library)
+════════════════════════════════════════
+Create  src/pages/Dashboard.test.tsx
+• Renders three panes + FAB
+• Clicking a thread link calls `navigate` (mock `useNavigate`).
+Use `screen.getByText(/Midnight Pact/)` etc.
+
+════════════════════════════════════════
+F. ACCESSIBILITY
+════════════════════════════════════════
+• All interactive items: `aria-label` + focus ring (`focus:outline-none focus:ring-2 focus:ring-ember`).
+
+════════════════════════════════════════
+G. COMMIT FLOW
+════════════════════════════════════════
+
+1. Generate files → run `npm run dev` (manual smoke).
+2. `npm test` → expect green.
+3. Commit
+   git add src/pages src/components/Dashboard src/mocks&#x20;
+   src/App.tsx src/pages/Dashboard.test.tsx
+   git commit -m "feat: main Dashboard (WhispersPane, SigilsPane, KeysLocksPane, FAB)"
+
+════════════════════════════════════════
+STYLE REMINDERS
+════════════════════════════════════════
+• No em dash.
+• File length ≤120 lines.
+• Import libs: `import { motion } from 'framer-motion';`.
+• Tailwind classes use tokens from tailwind.config.ts (`bg-violetDeep`).
+• Default font body.
+
+END OF SPEC
+
+```
+
+**How to use**  
+1. Save the file.  
+2. Ask Copilot Chat:  
+   > “Generate Dashboard.tsx per spec.”  
+3. Continue with each component and test; run dev & tests; commit. Whisper on.
+```
