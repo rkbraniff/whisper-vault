@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import Composer from './Composer';
 
@@ -16,10 +16,12 @@ describe('<Composer />', () => {
     const onSend = vi.fn();
     render(<Composer onSend={onSend} />);
     const textarea = screen.getAllByRole('textbox')[0];
-    fireEvent.change(textarea, { target: { value: 'test message' } });
     const sealBtn = screen.getAllByRole('button').find(btn => btn.getAttribute('aria-label') === 'Seal This Message');
-    if (sealBtn) fireEvent.click(sealBtn);
-    await new Promise(r => setTimeout(r, 700));
+    await act(async () => {
+      fireEvent.change(textarea, { target: { value: 'test message' } });
+      if (sealBtn) fireEvent.click(sealBtn);
+      await new Promise(r => setTimeout(r, 700));
+    });
     expect(onSend).toHaveBeenCalledWith('test message');
   });
 });
