@@ -26,7 +26,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/keys', keyRoutes);
 
-registerChatHandlers(io);
+io.on('connection', (socket) => {
+    registerChatHandlers(io, socket);
+});
 
 const PORT = process.env.PORT || 4000;
 

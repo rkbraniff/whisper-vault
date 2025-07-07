@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { encrypt, decrypt } from './cipher';
+import { encrypt, decrypt } from './cipher.js';
 import sodium from 'libsodium-wrappers-sumo';
 
 const key = new Uint8Array(32).fill(42); // dummy key

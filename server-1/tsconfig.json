@@ -2,8 +2,8 @@
   "compilerOptions": {
     "typeRoots": ["./node_modules/@types", "./src/types"],
     "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "Node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
