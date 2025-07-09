@@ -20,8 +20,16 @@ export interface NewMessageBody {
 
 // API helpers --------------------------------------------
 
-export const listThreads = async (): Promise<ThreadSummary[]> =>
-  fetch('/api/threads').then(r => r.json());
+import { useAuthedFetch } from './useAuthedFetch';
+
+export const useListThreads = () => {
+  const authedFetch = useAuthedFetch();
+  return async (): Promise<ThreadSummary[]> => {
+    const res = await authedFetch('/api/threads');
+    if (!res.ok) throw new Error(`Failed to fetch threads: ${res.status}`);
+    return res.json();
+  };
+};
 
 export const createThread = async (
   body: NewThreadBody
