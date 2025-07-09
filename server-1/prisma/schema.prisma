@@ -8,11 +8,21 @@ generator client {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  pubKey    String   @unique
-  messages  Message[] @relation("msg_sender")
-  received  Message[] @relation("msg_receiver")
+  id                String   @id @default(uuid())
+  email             String   @unique
+  passwordHash      String
+  firstName         String?
+  lastName          String?
+  totpSecret        String?
+  phone             String?
+  is2faEnabled      Boolean  @default(false)
+  emailConfirmed    Boolean  @default(false)
+  confirmationToken String?
+  createdAt         DateTime @default(now())
+  publicKey         String?
+  avatarUrl         String?  // <-- New field for user avatar
+  messages          Message[] @relation("msg_sender")
+  received          Message[] @relation("msg_receiver")
 }
 
 model Message {

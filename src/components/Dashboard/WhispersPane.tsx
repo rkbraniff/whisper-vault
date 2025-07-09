@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { listThreads } from '../../api/threads';
+import { useListThreads } from '../../api/threads';
 
 interface Thread {
   id: string;
@@ -15,7 +15,8 @@ interface WhispersPaneProps {
 
 const WhispersPane: React.FC<WhispersPaneProps> = ({ className = '' }) => {
   const navigate = useNavigate();
-  const { data: threads, isLoading, isError } = useQuery<Thread[]>({
+  const listThreads = useListThreads();
+  const { data: threads, isLoading, isError, error } = useQuery<Thread[], Error>({
     queryKey: ['threads'],
     queryFn: listThreads,
   });
@@ -24,7 +25,11 @@ const WhispersPane: React.FC<WhispersPaneProps> = ({ className = '' }) => {
   if (isLoading) {
     content = <li className="text-whisper-dim">Loading threads...</li>;
   } else if (isError) {
-    content = <li className="text-red-500">Failed to load threads.</li>;
+    let msg = 'Failed to load threads.';
+    if (error?.message?.includes('401')) {
+      msg = 'You must be signed in to view your threads.';
+    }
+    content = <li className="text-red-500">{msg}</li>;
   } else if (!threads || threads.length === 0) {
     content = <li className="text-whisper-dim">No threads yet.</li>;
   } else {
