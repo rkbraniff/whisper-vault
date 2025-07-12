@@ -13,8 +13,8 @@ model User {
   passwordHash      String
   firstName         String?
   lastName          String?
+  phone             String?  // <-- New field for user phone number
   totpSecret        String?
-  phone             String?
   is2faEnabled      Boolean  @default(false)
   emailConfirmed    Boolean  @default(false)
   confirmationToken String?
@@ -23,6 +23,7 @@ model User {
   avatarUrl         String?  // <-- New field for user avatar
   messages          Message[] @relation("msg_sender")
   received          Message[] @relation("msg_receiver")
+  threads           Thread[] @relation("ThreadParticipants")
 }
 
 model Message {
@@ -31,7 +32,21 @@ model Message {
   senderId    String
   receiver    User     @relation("msg_receiver", fields: [receiverId], references: [id])
   receiverId  String
+  thread      Thread   @relation(fields: [threadId], references: [id])
+  threadId    Int
+  threadLastMessage Thread? @relation("ThreadLastMessage")
   ciphertext  String
   nonce       String
   createdAt   DateTime @default(now())
+}
+
+model Thread {
+  id           Int       @id @default(autoincrement())
+  title        String
+  participants User[]    @relation("ThreadParticipants")
+  messages     Message[]
+  lastMessage  Message?  @relation("ThreadLastMessage", fields: [lastMessageId], references: [id])
+  lastMessageId Int? @unique
+  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime  @default(now())
 }

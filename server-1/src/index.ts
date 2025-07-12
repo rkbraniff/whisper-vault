@@ -4,10 +4,12 @@ import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import cors from 'cors';
 import helmet from 'helmet';
-import authRoutes from './routes/auth.js';
-import messageRoutes from './routes/messages.js';
-import keyRoutes from './routes/keys.js';
-import threadsRoutes from './routes/threads.js';
+import { authRouter } from './routes/auth.js';
+import { messagesRouter } from './routes/messages.js';
+import { keysRouter } from './routes/keys.js';
+import { threadsRouter } from './routes/threads.js';
+import { meRouter } from './routes/me.js';
+import path from 'path';
 import { registerChatHandlers } from './sockets/chat.js';
 
 const app = express();
@@ -23,10 +25,12 @@ app.use(cors());
 app.use(helmet());
 app.use(express.json());
 
-app.use('/api/auth', authRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/keys', keyRoutes);
-app.use('/api/threads', threadsRoutes);
+app.use('/api/auth', authRouter);
+app.use('/api/messages', messagesRouter);
+app.use('/api/keys', keysRouter);
+app.use('/api/threads', threadsRouter);
+app.use('/api/me', meRouter);
+app.use('/uploads', express.static(path.resolve('uploads')));
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 io.on('connection', (socket) => {

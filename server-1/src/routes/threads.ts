@@ -1,47 +1,88 @@
+
 import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth, require2FA } from '../middleware/auth.js';
 
-const router = Router();
+export const threadsRouter = Router();
 
-// GET /api/threads
-router.get('/', requireAuth, require2FA, async (req, res) => {
-  if (!req.user) return res.status(401).json({ error: 'unauthorized' });
-  const threads = await prisma.thread.findMany({
-    where: { participants: { some: { id: req.user.id } } },
-    orderBy: { updatedAt: 'desc' },
-    take: 10,
-    include: { lastMessage: true }
-  });
-  res.json(threads);
+/* ---------- helpers ---------- */
+const asInt = (v: string | string[]) => Number(Array.isArray(v) ? v[0] : v);
+
+/* ---------- GET /api/threads ---------- */
+threadsRouter.get('/', requireAuth, require2FA, async (req, res, next) => {
+  try {
+    const threads = await prisma.thread.findMany({
+      where: { participants: { some: { id: req.user!.id } } },
+      orderBy: { updatedAt: 'desc' },
+      take: 20,
+      include: {
+        lastMessage: true,
+        participants: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } }
+      }
+    });
+    res.json(threads);
+  } catch (err) {
+    next(err);
+  }
 });
 
-// POST /api/threads
-router.post('/', requireAuth, require2FA, async (req, res) => {
-  if (!req.user) return res.status(401).json({ error: 'unauthorized' });
-  const { title, participants } = req.body;
-  const thread = await prisma.thread.create({
-    data: {
-      title,
-      participants: { connect: participants.map((id: string) => ({ id })) }
-    }
-  });
-  res.status(201).json(thread);
+/* ---------- POST /api/threads ---------- */
+threadsRouter.post('/', requireAuth, require2FA, async (req, res, next) => {
+  try {
+    const { title, participants }: { title: string; participants: string[] } = req.body;
+
+    // ensure the creator is in the participants list
+    if (!participants.includes(req.user!.id)) participants.push(req.user!.id);
+
+    const thread = await prisma.thread.create({
+      data: {
+        title,
+        participants: { connect: participants.map(id => ({ id })) }
+      }
+    });
+    res.status(201).json(thread);
+  } catch (err) {
+    next(err);
+  }
 });
 
-// POST /api/threads/:id/messages
-router.post('/:id/messages', requireAuth, require2FA, async (req, res) => {
-  if (!req.user) return res.status(401).json({ error: 'unauthorized' });
-  const { ciphertext, nonce } = req.body;
-  const msg = await prisma.message.create({
-    data: {
-      threadId: req.params.id,
-      senderId: req.user.id,
-      ciphertext,
-      nonce
-    }
-  });
-  res.status(201).json(msg);
+/* ---------- POST /api/threads/:id/messages ---------- */
+threadsRouter.post('/:id/messages', requireAuth, require2FA, async (req, res, next) => {
+  try {
+    const threadId = asInt(req.params.id);
+    const { ciphertext, nonce, receiverId }:
+      { ciphertext: string; nonce: string; receiverId: string } = req.body;
+
+    // make sure current user actually belongs to this thread
+    const inThread = await prisma.thread.findFirst({
+      where: {
+        id: threadId,
+        participants: { some: { id: req.user!.id } }
+      },
+      select: { id: true }
+    });
+    if (!inThread) return res.status(403).json({ error: 'forbidden' });
+
+    const msg = await prisma.message.create({
+      data: {
+        threadId,
+        senderId: req.user!.id,
+        receiverId,
+        ciphertext,
+        nonce
+      }
+    });
+
+    // update lastMessage pointer on the thread
+    await prisma.thread.update({
+      where: { id: threadId },
+      data: { lastMessageId: msg.id, updatedAt: new Date() }
+    });
+
+    res.status(201).json(msg);
+  } catch (err) {
+    next(err);
+  }
 });
 
-export default router;
+
