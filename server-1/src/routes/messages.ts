@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 
-const router = Router();
+export const messagesRouter = Router();
 
 const messageSchema = z.object({
   senderId: z.string().uuid(),
@@ -11,7 +11,7 @@ const messageSchema = z.object({
   nonce: z.string(),
 });
 
-router.post('/', async (req, res) => {
+messagesRouter.post('/', async (req, res) => {
   try {
     const parsedData = messageSchema.parse(req.body);
     
@@ -33,4 +33,3 @@ router.post('/', async (req, res) => {
   }
 });
 
-export default router;
