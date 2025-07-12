@@ -1,0 +1,44 @@
+# Whisper Vault – Sprint ⚡ (July 2025)
+
+> **Goal:** finish the minimal lovable product (MLP) → sign-up ▶︎ confirm-email ▶︎ 2-FA ▶︎ dashboard with real data.
+
+## 🔴 1 – Un-block API (do this first)
+- [ ] **Reset & re-migrate DB**  
+      ```bash
+      cd server-1
+      npx prisma migrate reset --schema=prisma/schema.prisma  # y to confirm
+      npx prisma generate
+      npm run dev      # API must boot cleanly, no P2022
+      ```
+- [ ] Commit as `chore(db): reset dev db & regen Prisma client`
+
+## 🟠 2 – Threads / Messages CRUD
+- [ ] **threads.ts** – replace mock `findMany` / `create` with real Prisma calls  
+      *Return lastMessage + participants; orderBy updatedAt desc.*
+- [ ] **messages.ts** – create `POST /api/threads/:id/messages` and `GET` to stream.
+- [ ] Add Supertest spec `threads.test.ts` that:  
+      1. registers & confirms a user  
+      2. creates a thread with two participants  
+      3. posts a message and expects `201`
+
+## 🟠 3 – Avatar pipeline
+- [ ] **User model** already has `avatarUrl` → create endpoint `PUT /api/me/avatar`  
+      *Accept `multipart/form-data`; save file to `/uploads` for now (move to S3 later).*  
+- [ ] **NavBar.tsx** – if `avatarUrl` present show `<img>`; else initials.
+
+## 🟢 4 – CI & Docs
+- [ ] `.github/workflows/ci.yml`  
+      *steps: pnpm install → prisma generate → vitest run → eslint --max-warnings=0*  
+- [ ] Update **README** quick-start:  
+      `pnpm i && npx prisma migrate reset && pnpm run dev`  
+
+---
+
+### Coding Conventions for Copilot
+- All new Express routes end with `export default router;`
+- Use ES modules (`import …`) only—no `require`.
+- Always type Prisma results (`await prisma.user.findFirst<…>()`).
+- Front-end hooks live in `/src/hooks/`, components in `/src/components/`.
+- Tests must use Vitest + Supertest; wrap DB calls in `beforeEach(async () => prisma.$transaction([...]))`.
+
+*(Leave this file in the repo root; close each task with “✔ done” when finished.  Copilot will suggest code stubs as you create / open the referenced files.)*
