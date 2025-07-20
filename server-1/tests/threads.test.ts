@@ -1,3 +1,5 @@
+process.env.DATABASE_URL = "postgresql://whisper:secretsigil@localhost:5432/whispervault_test";
+import 'dotenv/config';
 import request from 'supertest';
 import { app } from '../src/index';
 

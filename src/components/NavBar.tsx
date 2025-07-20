@@ -14,9 +14,17 @@ export default function NavBar() {
       </div>
       {user ? (
         <div className="flex items-center gap-2 relative group">
-          <div className="w-9 h-9 rounded-full bg-violet-600 flex items-center justify-center text-lg font-bold cursor-pointer">
-            {initials || <span className="text-xs">?</span>}
-          </div>
+          {user.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt="avatar"
+              className="w-9 h-9 rounded-full object-cover border-2 border-violet-600"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-violet-600 flex items-center justify-center text-lg font-bold cursor-pointer">
+              {initials || <span className="text-xs">?</span>}
+            </div>
+          )}
           <span className="ml-2 font-medium">{user.firstName} {user.lastName}</span>
           <button
             onClick={logout}

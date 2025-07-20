@@ -7,6 +7,7 @@ export const messagesRouter = Router();
 const messageSchema = z.object({
   senderId: z.string().uuid(),
   receiverId: z.string().uuid(),
+  threadId: z.number(),
   ciphertext: z.string(),
   nonce: z.string(),
 });
@@ -14,11 +15,12 @@ const messageSchema = z.object({
 messagesRouter.post('/', async (req, res) => {
   try {
     const parsedData = messageSchema.parse(req.body);
-    
+
     const message = await prisma.message.create({
       data: {
         senderId: parsedData.senderId,
         receiverId: parsedData.receiverId,
+        threadId: parsedData.threadId,
         ciphertext: parsedData.ciphertext,
         nonce: parsedData.nonce,
       },

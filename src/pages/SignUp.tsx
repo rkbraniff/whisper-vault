@@ -11,7 +11,7 @@ async function resendConfirmation(email: string) {
 }
 
 export default function SignUp() {
-  const [form, set] = useState({ email: '', password: '', confirm: '', firstName: '', lastName: '' });
+  const [form, set] = useState({ email: '', password: '', confirm: '', firstName: '', lastName: '', phone: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showResend] = useState(false);
@@ -82,6 +82,14 @@ export default function SignUp() {
         onChange={e => set({ ...form, lastName: e.target.value })}
         className="w-full p-3 rounded"
         required
+      />
+      <input
+        type="tel"
+        placeholder="Phone Number (optional)"
+        value={form.phone}
+        onChange={e => set({ ...form, phone: e.target.value })}
+        className="w-full p-3 rounded"
+        pattern="[0-9\-\+\(\) ]*"
       />
       <input
         type="email"

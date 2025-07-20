@@ -17,6 +17,6 @@ keysRouter.get('/:userId', async (req, res) => {
     where: { id: req.params.userId },
     select: { publicKey: true }
   });
-  res.json({ publicKey: user?.publicKey ?? null });
+res.json({ publicKey: user?.publicKey ?? null });
 });
 

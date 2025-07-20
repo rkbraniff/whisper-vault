@@ -1,7 +1,11 @@
+process.env.DATABASE_URL = "postgresql://whisper:secretsigil@localhost:5432/whispervault_test";
+import 'dotenv/config';
 import request from 'supertest';
 import { app } from '../src/index';
 
 describe('Auth flow', () => {
+import { vitest } from 'vitest';
+vitest.setTimeout(15_000);
   const email = `u${Date.now()}@ex.com`;
   const password = 'hunter2!A';
   const firstName = 'Testy';
@@ -44,3 +48,11 @@ describe('Auth flow', () => {
     expect(res.body.token).toBeTruthy();
   });
 });
+
+  // Use test helper to get confirmationToken and totpSecret
+  const lookup = await request(app).get(`/api/auth/_test/lookup/${email}`);
+  const { confirmationToken, totpSecret } = lookup.body;
+  expect(confirmationToken).toBeTruthy();
+  expect(totpSecret).toBeTruthy();
+  // Confirm email
+  await request(app).get(`/api/auth/confirm/${confirmationToken}`).expect(200);

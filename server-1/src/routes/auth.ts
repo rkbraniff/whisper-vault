@@ -71,7 +71,19 @@ authRouter.post(
       const secret = speakeasy.generateSecret({ name: process.env.TOTP_ISSUER || 'WhisperVault' });
       const user = await prisma.user.create({ data: { email, passwordHash: hash, firstName, lastName, phone, confirmationToken, totpSecret: secret.base32, is2faEnabled: true } });
       // Send confirmation email with QR code and manual code
-      await sendConfirmationEmail(email, confirmationToken, secret.otpauth_url, secret.base32);
+      if (process.env.NODE_ENV !== 'test') {
+        await sendConfirmationEmail(email, confirmationToken, secret.otpauth_url, secret.base32);
+      }
+// Test-only helper route for looking up confirmationToken and totpSecret
+if (process.env.NODE_ENV === 'test') {
+  authRouter.get('/_test/lookup/:email', async (req, res) => {
+    const u = await prisma.user.findUnique({
+      where: { email: req.params.email },
+      select: { confirmationToken: true, totpSecret: true },
+    });
+    res.json(u ?? {});
+  });
+}
       // Respond with success message only (no temp token, no 2FA required yet)
       res.status(201).json({ status: 'confirmation_required', message: 'Registration successful! Please check your email to confirm your account.' });
     } catch (err) { next(err); }
@@ -205,7 +217,7 @@ authRouter.post('/resend-confirmation', async (req: Request, res: Response) => {
     label: user.email,
     issuer: process.env.TOTP_ISSUER || 'WhisperVault',
   });
-  await sendConfirmationEmail(user.email, confirmationToken, otpauthUrl, user.totpSecret);
+  await sendConfirmationEmail(user.email, confirmationToken, otpauthUrl, user.totpSecret ?? undefined);
   res.json({ status: 'resent', message: 'Confirmation email resent.' });
 });
 

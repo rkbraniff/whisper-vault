@@ -1,17 +1,19 @@
-import { useEffect, useState } from 'react';
+
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 export default function ConfirmEmail() {
   const { token } = useParams();
   const navigate = useNavigate();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>(
-    'loading'
-  );
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
   const [qrImg, setQrImg] = useState<string | null>(null);
   const [manualCode, setManualCode] = useState<string | null>(null);
+  const fetchedRef = useRef(false);
 
   useEffect(() => {
+    if (fetchedRef.current) return; // Prevent re-fetching
+    fetchedRef.current = true;
     if (!token) {
       setStatus('error');
       setMessage('No confirmation token provided.');
@@ -56,8 +58,11 @@ export default function ConfirmEmail() {
                 style={{ maxWidth: 200 }}
               />
               {manualCode && (
-                <div>
-                  Or enter this code manually: <b>{manualCode}</b>
+                <div className="break-words text-center mt-2">
+                  Or enter this code manually:<br />
+                  <b className="inline-block break-all text-lg bg-gray-800 text-white px-2 py-1 rounded select-all mt-1">
+                    {manualCode}
+                  </b>
                 </div>
               )}
             </div>
