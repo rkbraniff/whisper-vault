@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 export default function SignIn() {
   const nav = useNavigate();
   const { login: setAuth } = useAuth();
-  const [form, set] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [showResend, setShowResend] = useState(false);
   const [show2FA, setShow2FA] = useState(false);
@@ -17,6 +17,15 @@ export default function SignIn() {
   const [smsSent, setSmsSent] = useState(false);
   const [smsLoading, setSmsLoading] = useState(false);
 
+  // Helper to reset 2FA state
+  function reset2FA() {
+    setShow2FA(false);
+    setTempToken('');
+    setTwoFACode('');
+    setTwoFAMethod(null);
+    setSmsSent(false);
+    setSmsLoading(false);
+  }
   const login = useMutation({
     mutationFn: () =>
       fetch('/api/auth/login', {
@@ -99,23 +108,28 @@ export default function SignIn() {
           onSubmit={e => {
             e.preventDefault();
             setError('');
+            reset2FA(); // Always reset 2FA state when logging in
             login.mutate();
           }}
           className="space-y-4"
         >
           <input
             type="email"
+            id="email"
+            name="email"
             placeholder="Email"
             value={form.email}
-            onChange={e => set({ ...form, email: e.target.value })}
+            onChange={e => setForm({ ...form, email: e.target.value })}
             className="w-full p-3 rounded"
             required
           />
           <input
             type="password"
+            id="password"
+            name="password"
             placeholder="Password"
             value={form.password}
-            onChange={e => set({ ...form, password: e.target.value })}
+            onChange={e => setForm({ ...form, password: e.target.value })}
             className="w-full p-3 rounded"
             minLength={8}
             required
