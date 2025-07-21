@@ -22,3 +22,40 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# ─ Essentials
+.env*
+*.local
+!.env.example        # template stays visible
+
+# ─ Node junk
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# ─ Builds
+dist/
+build/
+coverage/
+.vite/
+
+# ─ OS cruft
+.DS_Store
+Thumbs.db
+
+# ─ Editor settings
+.idea/
+.vscode/
+
+# ─ Prisma
+prisma/dev.db
+prisma/dev.sqlite
+prisma/migrations/
+
+# ─ Vitest snapshots
+*.snap
+
+# ─ Logs
+*.log
+logs/

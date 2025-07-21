@@ -4,6 +4,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import speakeasy from 'speakeasy';
 import qrcode from 'qrcode';
 import { prisma } from '../lib/prisma.js';
+import { sendSMS } from '../lib/sms.js';
 import { body, validationResult } from 'express-validator';
 import { z } from 'zod';
 import { sendConfirmationEmail } from '../lib/mailer.js';
@@ -75,15 +76,7 @@ authRouter.post(
         await sendConfirmationEmail(email, confirmationToken, secret.otpauth_url, secret.base32);
       }
 // Test-only helper route for looking up confirmationToken and totpSecret
-if (process.env.NODE_ENV === 'test') {
-  authRouter.get('/_test/lookup/:email', async (req, res) => {
-    const u = await prisma.user.findUnique({
-      where: { email: req.params.email },
-      select: { confirmationToken: true, totpSecret: true },
-    });
-    res.json(u ?? {});
-  });
-}
+
       // Respond with success message only (no temp token, no 2FA required yet)
       res.status(201).json({ status: 'confirmation_required', message: 'Registration successful! Please check your email to confirm your account.' });
     } catch (err) { next(err); }
@@ -128,7 +121,9 @@ authRouter.post('/login', async (req: Request, res: Response) => {
 authRouter.post('/2fa/verify', async (req: Request, res: Response) => {
   try {
     const schema = z.object({ code: z.string() });
-    const { code } = schema.parse(req.body);
+    let { code } = schema.parse(req.body);
+    // Normalize code: remove all non-digits
+    const normalizedCode = code.replace(/\D/g, '');
     const auth = req.headers.authorization?.split(' ')[1];
     if (!auth) return res.status(401).json({ error: 'No temp token' });
     let payload: AuthJwtPayload;
@@ -147,7 +142,7 @@ authRouter.post('/2fa/verify', async (req: Request, res: Response) => {
       console.error('[2FA VERIFY] No user or no 2FA secret:', payload.userId, user);
       return res.status(401).json({ error: 'No 2FA setup' });
     }
-    const verified = speakeasy.totp.verify({ secret: user.totpSecret, encoding: 'base32', token: code, window: 1 });
+    const verified = speakeasy.totp.verify({ secret: user.totpSecret, encoding: 'base32', token: normalizedCode, window: 1 });
     if (!verified) {
       console.error('[2FA VERIFY] Invalid code for user:', payload.userId, code);
       return res.status(401).json({ error: 'Invalid code' });
@@ -199,7 +194,9 @@ authRouter.get('/confirm/:token', async (req: Request, res: Response) => {
   } catch (err) {
     console.error('Error generating QR code:', err);
   }
-  res.json({ status: 'confirmed', otpauthUrl, qrImg, manualCode: user.totpSecret });
+  // Issue tempToken for 2FA verification
+  const tempToken = jwt.sign({ userId: user.id, twofa: true }, getJwtSecret(), { expiresIn: '5m' });
+  res.json({ status: 'confirmed', otpauthUrl, qrImg, manualCode: user.totpSecret, tempToken });
 });
 // Resend confirmation email endpoint
 authRouter.post('/resend-confirmation', async (req: Request, res: Response) => {
@@ -265,10 +262,15 @@ authRouter.post('/2fa/send-sms', authMiddleware, async (req: Request, res: Respo
     }
     // Generate a 6-digit code
     const code = (Math.floor(100000 + Math.random() * 900000)).toString();
-
-    // Simulate SMS send delay
+    smsCodes.set(userId, code);
     setTimeout(() => smsCodes.delete(userId), 5 * 60 * 1000); // Code expires in 5 min
-    res.json({ message: 'SMS code sent.' });
+    try {
+      await sendSMS(user.phone, `Your WhisperVault login code is: ${code}`);
+      res.json({ message: 'SMS code sent.' });
+    } catch (err) {
+      console.error('[SMS SEND ERROR]', err);
+      res.status(500).json({ error: 'Failed to send SMS' });
+    }
   } catch (e) {
     console.error('[SEND SMS ERROR]:', e);
     res.status(500).json({ error: 'Failed to send SMS code.' });
