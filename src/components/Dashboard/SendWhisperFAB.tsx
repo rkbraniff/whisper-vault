@@ -1,11 +1,10 @@
-import React from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 /**
  * Floating Action Button - Send a Whisper
  */
-export default function SendWhisperFAB({ onClick }: { onClick?: () => void }) {
+export default function SendWhisperFAB() {
   const navigate = useNavigate();
   return (
     <motion.button

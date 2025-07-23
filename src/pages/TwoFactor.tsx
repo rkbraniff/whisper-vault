@@ -13,15 +13,17 @@ export default function TwoFactor() {
   }, [temp, nav]);
 
   const verify = useMutation({
-    mutationFn: () =>
-      fetch('/api/auth/2fa/verify', {
+    mutationFn: () => {
+      console.log('Temp token:', temp);
+      return fetch('/api/auth/2fa/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${temp}`,
         },
         body: JSON.stringify({ code }),
-      }).then(r => r.json()),
+      }).then(r => r.json());
+    },
     onSuccess: ({ token, error }) => {
       if (token) {
         localStorage.setItem('jwt', token);

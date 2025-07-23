@@ -52,6 +52,7 @@ export default function SignIn() {
 
   const verify2FA = useMutation({
     mutationFn: () => {
+      console.log('2FA tempToken:', tempToken);
       if (twoFAMethod === 'sms') {
         return fetch('/api/auth/2fa/verify-sms', {
           method: 'POST',

@@ -71,9 +71,21 @@ authRouter.post(
       // Generate 2FA secret and otpauth URL
       const secret = speakeasy.generateSecret({ name: process.env.TOTP_ISSUER || 'WhisperVault' });
       const user = await prisma.user.create({ data: { email, passwordHash: hash, firstName, lastName, phone, confirmationToken, totpSecret: secret.base32, is2faEnabled: true } });
-      // Send confirmation email with QR code and manual code
+      // Generate otpauth URL and QR code using the stored secret
+      const otpauthUrl = speakeasy.otpauthURL({
+        secret: secret.base32,
+        label: email,
+        issuer: process.env.TOTP_ISSUER || 'WhisperVault',
+      });
+      let qrImg = '';
+      try {
+        qrImg = await qrcode.toDataURL(otpauthUrl);
+      } catch (err) {
+        console.error('Error generating QR code:', err);
+      }
+      // Send confirmation email with QR code image and manual code
       if (process.env.NODE_ENV !== 'test') {
-        await sendConfirmationEmail(email, confirmationToken, secret.otpauth_url, secret.base32);
+        await sendConfirmationEmail(email, confirmationToken, otpauthUrl, secret.base32, qrImg);
       }
 // Test-only helper route for looking up confirmationToken and totpSecret
 
@@ -142,7 +154,9 @@ authRouter.post('/2fa/verify', async (req: Request, res: Response) => {
       console.error('[2FA VERIFY] No user or no 2FA secret:', payload.userId, user);
       return res.status(401).json({ error: 'No 2FA setup' });
     }
-    const verified = speakeasy.totp.verify({ secret: user.totpSecret, encoding: 'base32', token: normalizedCode, window: 1 });
+    // DEBUG: Log the TOTP secret being used for verification
+    console.log('[2FA VERIFY] Using TOTP secret for user', payload.userId, ':', user.totpSecret);
+    const verified = speakeasy.totp.verify({ secret: user.totpSecret, encoding: 'base32', token: normalizedCode, window: 2 });
     if (!verified) {
       console.error('[2FA VERIFY] Invalid code for user:', payload.userId, code);
       return res.status(401).json({ error: 'Invalid code' });
@@ -182,7 +196,7 @@ authRouter.get('/confirm/:token', async (req: Request, res: Response) => {
     where: { id: user.id },
     data: { emailConfirmed: true, confirmationToken: null }
   });
-  // Generate otpauth URL and QR code for UI
+  // Generate otpauth URL and QR code for UI using stored secret
   const otpauthUrl = speakeasy.otpauthURL({
     secret: user.totpSecret as string,
     label: user.email,
@@ -208,13 +222,19 @@ authRouter.post('/resend-confirmation', async (req: Request, res: Response) => {
   // Generate new confirmation token
   const confirmationToken = crypto.randomBytes(32).toString('hex');
   await prisma.user.update({ where: { id: user.id }, data: { confirmationToken } });
-  // Generate otpauth URL for QR
+  // Generate otpauth URL and QR code for QR using stored secret
   const otpauthUrl = speakeasy.otpauthURL({
     secret: user.totpSecret as string,
     label: user.email,
     issuer: process.env.TOTP_ISSUER || 'WhisperVault',
   });
-  await sendConfirmationEmail(user.email, confirmationToken, otpauthUrl, user.totpSecret ?? undefined);
+  let qrImg = '';
+  try {
+    qrImg = await qrcode.toDataURL(otpauthUrl);
+  } catch (err) {
+    console.error('Error generating QR code:', err);
+  }
+  await sendConfirmationEmail(user.email, confirmationToken, otpauthUrl, user.totpSecret ?? undefined, qrImg);
   res.json({ status: 'resent', message: 'Confirmation email resent.' });
 });
 
