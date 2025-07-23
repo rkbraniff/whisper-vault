@@ -75,8 +75,18 @@ io.on('connection', (socket) => {
 });
 
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  console.error(err);
-  res.status(500).json({ error: 'internal' });
+  console.error('Error details:', err);
+  
+  // In production, don't expose internal error details
+  if (process.env.NODE_ENV === 'production') {
+    res.status(500).json({ error: 'internal' });
+  } else {
+    res.status(500).json({ 
+      error: 'internal',
+      details: err.message,
+      stack: err.stack
+    });
+  }
 });
 
 const PORT = process.env.PORT || 4000;
