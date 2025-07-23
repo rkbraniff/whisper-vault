@@ -54,24 +54,38 @@ authRouter.post(
 
       const hash = await bcrypt.hash(password, 12);
       const confirmationToken = crypto.randomBytes(32).toString('hex');
-      // Generate 2FA secret and otpauth URL
+      // Generate 2FA secret and store the canonical otpauthURL
       const secret = speakeasy.generateSecret({ name: process.env.TOTP_ISSUER || 'WhisperVault' });
-      const user = await prisma.user.create({ data: { email, passwordHash: hash, firstName, lastName, phone, confirmationToken, totpSecret: secret.base32, is2faEnabled: true } });
-      // Generate otpauth URL and QR code using the stored secret
+      console.log('[REGISTRATION] Generated secret object:', {
+        base32: secret.base32,
+        hex: secret.hex,
+        ascii: secret.ascii
+      });
+      
+      // Generate the otpauthURL once and store it
       const otpauthUrl = speakeasy.otpauthURL({
         secret: secret.base32,
         label: email,
         issuer: process.env.TOTP_ISSUER || 'WhisperVault',
       });
-      let qrImg = '';
-      try {
-        qrImg = await qrcode.toDataURL(otpauthUrl);
-      } catch (err) {
-        console.error('Error generating QR code:', err);
-      }
-      // Send confirmation email with QR code image and manual code
+      
+      // Extract the canonical secret from the otpauthURL
+      const urlParams = new URLSearchParams(otpauthUrl.split('?')[1]);
+      const canonicalSecret = urlParams.get('secret') || secret.base32;
+      
+      console.log('[REGISTRATION] Original base32:', secret.base32);
+      console.log('[REGISTRATION] Generated otpauthUrl:', otpauthUrl);
+      console.log('[REGISTRATION] Canonical secret from URL:', canonicalSecret);
+      
+      const user = await prisma.user.create({ data: { email, passwordHash: hash, firstName, lastName, phone, confirmationToken, totpSecret: canonicalSecret, is2faEnabled: true } });
+      console.log('[REGISTRATION] Stored in DB - totpSecret:', user.totpSecret);
+      
+      // Send confirmation email - pass the generated otpauthUrl to avoid regeneration
       if (process.env.NODE_ENV !== 'test') {
-        await sendConfirmationEmail(email, confirmationToken, otpauthUrl, secret.base32, qrImg);
+        console.log('[REGISTRATION] Calling sendConfirmationEmail with:');
+        console.log('  - stored totpSecret:', user.totpSecret);
+        console.log('  - generated otpauthUrl:', otpauthUrl);
+        await sendConfirmationEmail(email, confirmationToken, otpauthUrl, user.totpSecret || undefined);
       }
 // Test-only helper route for looking up confirmationToken and totpSecret
 
@@ -188,6 +202,15 @@ authRouter.get('/confirm/:token', async (req: Request, res: Response) => {
     label: user.email,
     issuer: process.env.TOTP_ISSUER || 'WhisperVault',
   });
+  
+  // Extract the canonical secret from the otpauthURL to ensure consistency
+  const urlParams = new URLSearchParams(otpauthUrl.split('?')[1]);
+  const canonicalSecret = urlParams.get('secret') || user.totpSecret;
+  
+  console.log('[CONFIRM] Original totpSecret:', user.totpSecret);
+  console.log('[CONFIRM] Generated otpauthUrl secret:', canonicalSecret);
+  console.log('[CONFIRM] Secrets match:', user.totpSecret === canonicalSecret);
+  
   let qrImg = '';
   try {
     qrImg = await qrcode.toDataURL(otpauthUrl);
@@ -208,19 +231,9 @@ authRouter.post('/resend-confirmation', async (req: Request, res: Response) => {
   // Generate new confirmation token
   const confirmationToken = crypto.randomBytes(32).toString('hex');
   await prisma.user.update({ where: { id: user.id }, data: { confirmationToken } });
-  // Generate otpauth URL and QR code for QR using stored secret
-  const otpauthUrl = speakeasy.otpauthURL({
-    secret: user.totpSecret as string,
-    label: user.email,
-    issuer: process.env.TOTP_ISSUER || 'WhisperVault',
-  });
-  let qrImg = '';
-  try {
-    qrImg = await qrcode.toDataURL(otpauthUrl);
-  } catch (err) {
-    console.error('Error generating QR code:', err);
-  }
-  await sendConfirmationEmail(user.email, confirmationToken, otpauthUrl, user.totpSecret ?? undefined, qrImg);
+  
+  // Let mailer generate QR from stored secret
+  await sendConfirmationEmail(user.email, confirmationToken, undefined, user.totpSecret ?? undefined);
   res.json({ status: 'resent', message: 'Confirmation email resent.' });
 });
 
