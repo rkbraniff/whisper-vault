@@ -56,6 +56,7 @@ app.get('/api/health', async (_req, res) => {
       await prisma.$queryRaw`SELECT 1`;
       health.database = 'connected';
     } catch (dbError) {
+      console.error('[HEALTH] Database connection error:', dbError);
       health.database = 'error';
       health.ok = false;
     }

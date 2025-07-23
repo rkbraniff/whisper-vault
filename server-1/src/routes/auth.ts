@@ -91,7 +91,14 @@ authRouter.post(
 
       // Respond with success message only (no temp token, no 2FA required yet)
       res.status(201).json({ status: 'confirmation_required', message: 'Registration successful! Please check your email to confirm your account.' });
-    } catch (err) { next(err); }
+    } catch (err) { 
+      console.error('[REGISTRATION] Error:', err);
+      if (err instanceof Error) {
+        console.error('[REGISTRATION] Error message:', err.message);
+        console.error('[REGISTRATION] Error stack:', err.stack);
+      }
+      next(err); 
+    }
   }
 );
 authRouter.post('/login', async (req: Request, res: Response) => {
