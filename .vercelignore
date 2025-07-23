@@ -1,0 +1,20 @@
+# Ignore environment files
+.env
+.env.*
+!.env.example
+
+# Ignore development files
+server-1/.env
+server-1/.env.*
+
+# Ignore node_modules
+node_modules/
+server-1/node_modules/
+
+# Ignore build artifacts
+dist/
+build/
+
+# Ignore logs
+*.log
+logs/
