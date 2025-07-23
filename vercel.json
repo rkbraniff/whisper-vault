@@ -1,16 +1,26 @@
 {
   "version": 2,
-  "name": "whisper-vault-api",
   "builds": [
     {
-      "src": "server-1/dist/index.js",
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
+      "src": "server-1/src/index.ts",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "server-1/dist/index.js"
+      "dest": "server-1/src/index.ts"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ],
   "env": {

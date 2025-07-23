@@ -6,11 +6,18 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "vercel-build": "npm run build && cd server-1 && npm install && npm run build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
+  },
+  "overrides": {
+    "@testing-library/react": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
   },
   "dependencies": {
     "@tanstack/react-query": "^5.81.5",
