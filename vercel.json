@@ -19,6 +19,10 @@
       "dest": "server-1/src/index.ts"
     },
     {
+      "src": "/favicon.ico",
+      "dest": "/favicon.ico"
+    },
+    {
       "src": "/assets/(.*)",
       "dest": "/assets/$1"
     },
