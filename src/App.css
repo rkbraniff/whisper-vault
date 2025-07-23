@@ -12,10 +12,18 @@
   transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 0.5em #646cff) drop-shadow(0 0 2em #646cffcc);
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 0.5em #61dafb) drop-shadow(0 0 2em #61dafbcc);
+}
+
+/* Utility: Glow effect for any element */
+.glow-ember {
+  box-shadow: 0 0 8px 2px #FF6A3D55, 0 0 24px 8px #FF6A3D33;
+}
+.glow-violet {
+  box-shadow: 0 0 8px 2px #5E4B8B55, 0 0 24px 8px #5E4B8B33;
 }
 
 @keyframes logo-spin {

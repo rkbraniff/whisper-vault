@@ -11,7 +11,7 @@ const KeysLocksPane: React.FC<KeysLocksPaneProps> = ({ className = '' }) => {
 
   return (
     <section
-      className={`rounded-2xl bg-obsidian-light/60 border border-violetDeep/30 shadow-xl p-6 flex items-center justify-between ${className}`}
+      className={`rounded-2xl bg-obsidian-light/60 border border-violetDeep/30 glow-violet p-6 flex items-center justify-between ${className}`}
       aria-label="Identity Key"
     >
       <div>
@@ -19,7 +19,7 @@ const KeysLocksPane: React.FC<KeysLocksPaneProps> = ({ className = '' }) => {
         <div className="font-mono text-sm select-all">{shortKey}</div>
       </div>
       <button
-        className="ml-4 px-4 py-2 rounded-lg bg-violetDeep text-white font-semibold shadow focus:outline-none focus:ring-2 focus:ring-ember"
+        className="ml-4 px-4 py-2 rounded-lg bg-violetDeep text-white font-semibold glow-violet focus:outline-none focus:ring-2 focus:ring-ember"
         aria-label="Export PubKey"
         tabIndex={0}
         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { navigator.clipboard.writeText(pubKey); } }}

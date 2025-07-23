@@ -12,20 +12,6 @@ import crypto from 'crypto';
 
 
 export const authRouter = Router();
-// DEBUG: Get current user's TOTP secret and otpauth URL (for troubleshooting only, remove in production)
-authRouter.get('/debug/totp-secret', authMiddleware, async (req: Request, res: Response) => {
-  const userId = (req as any).userId;
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  res.json({
-    totpSecret: user.totpSecret,
-    otpauthUrl: user.totpSecret ? speakeasy.otpauthURL({
-      secret: user.totpSecret,
-      label: user.email,
-      issuer: process.env.TOTP_ISSUER || 'WhisperVault',
-    }) : null
-  });
-});
 
 interface AuthJwtPayload extends JwtPayload {
   userId: string;

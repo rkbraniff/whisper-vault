@@ -13,9 +13,9 @@ const transporter = nodemailer.createTransport({
 
 export async function sendConfirmationEmail(to: string, token: string, otpauthUrl?: string, base32?: string, qrImg?: string) {
   // Use the SPA route for confirmation
-  const url = `${process.env.CLIENT_ORIGIN}/confirm/${token}`;
+  const url = `${process.env.CLIENT_ORIGIN}/whispervault/confirm/${token}`;
   // Use qrImg if provided, otherwise generate from otpauthUrl
-  let qrImage = qrImg || '';
+  let qrImage = qrImg ?? await qrcode.toDataURL(otpauthUrl!, { errorCorrectionLevel: 'L', margin: 1, scale: 4 });
   if (!qrImage && otpauthUrl) {
     try {
       console.log('[MAILER] otpauthUrl:', otpauthUrl);

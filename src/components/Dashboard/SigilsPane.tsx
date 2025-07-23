@@ -9,7 +9,7 @@ const SigilsPane: React.FC = () => {
   const contacts: { id: string; name: string }[] = [];
   return (
     <section
-      className="rounded-2xl bg-obsidian-light/60 border border-violetDeep/30 shadow-xl p-6"
+      className="rounded-2xl bg-obsidian-light/60 border border-violetDeep/30 glow-violet p-6"
       aria-label="Sigils"
     >
       <div className="text-lg font-semibold mb-4">Sigils</div>

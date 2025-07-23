@@ -10,7 +10,6 @@ export default function NavBar() {
       <div className="flex gap-4 items-center">
         <Link to="/" className="hover:underline">Home</Link>
         <Link to="/messenger" className="hover:underline">Messenger</Link>
-        <Link to="/2fa" className="hover:underline">2FA</Link>
       </div>
       {user ? (
         <div className="flex items-center gap-2 relative group">
