@@ -1,0 +1,13 @@
+{
+  "name": "whisper-vault-api-production",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "server-1/dist/index.js",
+  "scripts": {
+    "start": "node server-1/dist/index.js",
+    "postinstall": "cd server-1 && npm install && npx prisma generate"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
