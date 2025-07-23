@@ -45,7 +45,7 @@ app.get('/api/health', async (_req, res) => {
       env_vars: {
         hasDatabase: !!process.env.DATABASE_URL,
         hasJWT: !!process.env.JWT_SECRET,
-        hasEmail: !!process.env.EMAIL_HOST && !!process.env.EMAIL_USER,
+        hasEmail: !!process.env.SMTP_HOST && !!process.env.SMTP_USER,
         hasTwilio: !!process.env.TWILIO_SID
       }
     };
