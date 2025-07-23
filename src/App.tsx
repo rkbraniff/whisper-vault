@@ -11,7 +11,7 @@ import ConfirmEmail from './pages/ConfirmEmail';
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/whispervault/">
       <NavBar />
       <main className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-6 pt-20">
         <Routes>
