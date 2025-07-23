@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
@@ -16,12 +15,15 @@ const app = express();
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
     cors: {
-        origin: process.env.CLIENT_ORIGIN,
+        origin: process.env.CLIENT_ORIGIN || 'https://whisper-vault-al0bunu88m-rkbraniffs-projects.vercel.app',
         methods: ['GET', 'POST'],
     },
 });
 
-app.use(cors());
+app.use(cors({
+    origin: process.env.CLIENT_ORIGIN || 'https://whisper-vault-al0bunu88m-rkbraniffs-projects.vercel.app',
+    credentials: true
+}));
 app.use(helmet());
 app.use(express.json());
 
