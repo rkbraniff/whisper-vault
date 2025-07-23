@@ -11,7 +11,17 @@ import ConfirmEmail from './pages/ConfirmEmail';
 
 export default function App() {
   // Use different basename for Vercel vs GitHub Pages
-  const basename = import.meta.env.VITE_VERCEL ? '/' : '/whispervault/';
+  // Check for Vercel environment or hostname
+  const isVercel = import.meta.env.VITE_VERCEL || 
+                   (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'));
+  const basename = isVercel ? '/' : '/whispervault/';
+  
+  console.log('Environment check:', {
+    VITE_VERCEL: import.meta.env.VITE_VERCEL,
+    hostname: typeof window !== 'undefined' ? window.location.hostname : 'server',
+    isVercel,
+    basename
+  });
   
   return (
     <BrowserRouter basename={basename}>
