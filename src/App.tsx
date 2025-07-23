@@ -10,8 +10,11 @@ import SignIn from './pages/SignIn';
 import ConfirmEmail from './pages/ConfirmEmail';
 
 export default function App() {
+  // Use different basename for Vercel vs GitHub Pages
+  const basename = import.meta.env.VITE_VERCEL ? '/' : '/whispervault/';
+  
   return (
-    <BrowserRouter basename="/whispervault/">
+    <BrowserRouter basename={basename}>
       <NavBar />
       <main className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-6 pt-20">
         <Routes>
