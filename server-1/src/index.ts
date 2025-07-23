@@ -31,7 +31,42 @@ app.use('/api/keys', keysRouter);
 app.use('/api/threads', threadsRouter);
 app.use('/api/me', meRouter);
 app.use('/uploads', express.static(path.resolve('uploads')));
-app.get('/api/health', (_req, res) => res.json({ ok: true }));
+
+// Health check endpoint
+app.get('/api/health', async (_req, res) => {
+  try {
+    const health = {
+      ok: true,
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'unknown',
+      database: 'unknown',
+      env_vars: {
+        hasDatabase: !!process.env.DATABASE_URL,
+        hasJWT: !!process.env.JWT_SECRET,
+        hasEmail: !!process.env.EMAIL_HOST && !!process.env.EMAIL_USER,
+        hasTwilio: !!process.env.TWILIO_SID
+      }
+    };
+
+    // Test database connection
+    try {
+      const { prisma } = await import('./lib/prisma.js');
+      await prisma.$queryRaw`SELECT 1`;
+      health.database = 'connected';
+    } catch (dbError) {
+      health.database = 'error';
+      health.ok = false;
+    }
+
+    res.json(health);
+  } catch (error) {
+    res.status(500).json({ 
+      ok: false, 
+      error: 'Health check failed',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
 
 io.on('connection', (socket) => {
     registerChatHandlers(io, socket);
