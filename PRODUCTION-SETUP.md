@@ -26,6 +26,13 @@ Your app is successfully deployed to Vercel, but you need to set up the producti
 
 Go to your [Vercel Dashboard](https://vercel.com/dashboard), find your `whisper-vault` project, go to Settings > Environment Variables, and add:
 
+**⚠️ IMPORTANT: Prisma Accelerate Protocol**
+If you're using Prisma Accelerate, make sure your `DATABASE_URL` uses the `prisma://` protocol, not `prisma+postgres://`. The correct format is:
+```
+DATABASE_URL=prisma://accelerate.prisma-data.net/?api_key=your_api_key_here
+```
+
+For regular PostgreSQL databases:
 ```
 DATABASE_URL=your_database_connection_string_here
 JWT_SECRET=your_super_secret_jwt_key_here_make_it_long_and_random
