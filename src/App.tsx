@@ -16,13 +16,6 @@ export default function App() {
                    (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'));
   const basename = isVercel ? '/' : '/whispervault/';
   
-  console.log('Environment check:', {
-    VITE_VERCEL: import.meta.env.VITE_VERCEL,
-    hostname: typeof window !== 'undefined' ? window.location.hostname : 'server',
-    isVercel,
-    basename
-  });
-  
   return (
     <BrowserRouter basename={basename}>
       <NavBar />
