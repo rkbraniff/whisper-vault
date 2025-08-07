@@ -1,20 +1,16 @@
 services:
   - type: web
-    name: whispervault-api
+    name: whisper-vault-api
     env: node
-    plan: free
     rootDir: server-1
-    buildCommand: npm run build
-    startCommand: npm run start
-    autoDeploy: true
+    buildCommand: npm install && npm run build
+    startCommand: npm start
     envVars:
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: whispervault-db
+          property: connectionString
       - key: JWT_SECRET
-        sync: false
-      - key: TOTP_ISSUER
-        value: WhisperVault
-      - key: NODE_ENV
-        value: production
+        value: yourSecret
       - key: CLIENT_ORIGIN
         value: https://whisper-vault.vercel.app
