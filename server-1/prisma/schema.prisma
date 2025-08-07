@@ -21,6 +21,7 @@ model User {
   createdAt         DateTime @default(now())
   publicKey         String?
   avatarUrl         String?  // <-- New field for user avatar
+  settings          Json?    // <-- New field for user settings (preferences)
   messages          Message[] @relation("msg_sender")
   received          Message[] @relation("msg_receiver")
   threads           Thread[] @relation("ThreadParticipants")
