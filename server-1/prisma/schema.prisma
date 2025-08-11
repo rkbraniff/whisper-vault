@@ -1,6 +1,7 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")         // prisma:// in prod, plain postgres in dev
+  directUrl = env("DIRECT_DATABASE_URL")  // required for migrations when url is prisma://
 }
 
 generator client {
@@ -25,6 +26,9 @@ model User {
   messages          Message[] @relation("msg_sender")
   received          Message[] @relation("msg_receiver")
   threads           Thread[] @relation("ThreadParticipants")
+  contacts          User[]   @relation("UserContacts") // Users this user has added as contacts
+  contactOf         User[]   @relation("UserContacts") // Users who have added this user as a contact
+  contactsOwned     Contact[] // Contacts owned by this user
 }
 
 model Message {
@@ -50,4 +54,45 @@ model Thread {
   lastMessageId Int? @unique
   updatedAt    DateTime  @updatedAt
   createdAt    DateTime  @default(now())
+}
+
+model Contact {
+  id        String   @id @default(uuid())
+  ownerId   String   // User who owns this contact (fk to your User model)
+  firstName String?
+  lastName  String?
+  note      String?
+  publicKey String?  // optional: store remote party’s public key
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  emails    ContactEmail[]
+  phones    ContactPhone[]
+
+  @@index([ownerId, lastName, firstName])
+}
+
+model ContactEmail {
+  id         String  @id @default(uuid())
+  contactId  String
+  email      String
+  isPrimary  Boolean @default(false)
+
+  contact    Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([contactId, email])
+  @@index([email])
+}
+
+model ContactPhone {
+  id         String  @id @default(uuid())
+  contactId  String
+  e164       String   // store normalized E.164, e.g. +19135551234
+  label      String?  // "mobile", "work", etc.
+
+  contact    Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([contactId, e164])
+  @@index([e164])
 }

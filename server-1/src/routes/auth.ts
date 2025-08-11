@@ -4,6 +4,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import speakeasy from 'speakeasy';
 import qrcode from 'qrcode';
 import { prisma } from '../lib/prisma.js';
+// Ensure prisma is imported from lib/prisma.js, which uses the correct PrismaClient
 import { sendSMS } from '../lib/sms.js';
 import { body, validationResult } from 'express-validator';
 import { z } from 'zod';
@@ -49,7 +50,7 @@ authRouter.post(
       if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
       const { email, password, firstName, lastName, phone } = req.body;
-      const existing = await prisma.user.findUnique({ where: { email } });
+  const existing = await prisma.user.findUnique({ where: { email } });
       if (existing) return res.status(409).json({ error: 'email in use' });
 
       const hash = await bcrypt.hash(password, 12);
@@ -107,7 +108,7 @@ authRouter.post('/login', async (req: Request, res: Response) => {
   try {
     const schema = z.object({ email: z.string().email(), password: z.string() });
     const { email, password } = schema.parse(req.body);
-    const user = await prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
       where: { email },
       select: {
         id: true,
@@ -153,7 +154,7 @@ authRouter.post('/2fa/verify', async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid temp token' });
     }
     if (!payload.twofa) return res.status(401).json({ error: 'Not a 2FA token' });
-    const user = await prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
       where: { id: payload.userId },
       select: { id: true, totpSecret: true, email: true, firstName: true, lastName: true, phone: true }
     });
@@ -248,7 +249,7 @@ authRouter.post('/resend-confirmation', async (req: Request, res: Response) => {
 authRouter.get('/2fa/setup-info', authMiddleware, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).userId;
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.totpSecret) {
       return res.status(404).json({ error: 'No 2FA secret found for user.' });
     }
@@ -277,7 +278,7 @@ const smsCodes = new Map(); // userId -> code
 authRouter.post('/2fa/send-sms', authMiddleware, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).userId;
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       console.error('[SEND SMS] No user found for userId:', userId);
       return res.status(400).json({ error: 'No user found.' });
@@ -319,7 +320,7 @@ authRouter.post('/2fa/verify-sms', authMiddleware, async (req: Request, res: Res
     }
     smsCodes.delete(userId);
     // Issue JWT
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       console.error('[VERIFY SMS] User not found for userId:', userId);
       return res.status(401).json({ error: 'User not found.' });

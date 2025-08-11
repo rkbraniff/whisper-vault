@@ -35,6 +35,7 @@ import { messagesRouter } from './routes/messages.js';
 import { keysRouter } from './routes/keys.js';
 import { threadsRouter } from './routes/threads.js';
 import { meRouter } from './routes/me.js';
+import { contactsRouter } from './routes/contacts.js';
 import { registerChatHandlers } from './sockets/chat.js';
 
 const app = express();
@@ -57,6 +58,7 @@ app.use('/api/messages', messagesRouter);
 app.use('/api/keys', keysRouter);
 app.use('/api/threads', threadsRouter);
 app.use('/api/me', meRouter);
+app.use('/api/contacts', contactsRouter);
 // Note: Static file serving for uploads disabled in serverless environment
 // TODO: Implement cloud storage for file uploads
 
