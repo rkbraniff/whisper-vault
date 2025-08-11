@@ -48,7 +48,6 @@ const io = new SocketIOServer(server, {
 
 app.use(cors(corsOpts));
 // make sure preflight gets the headers even on unmatched routes
-app.options('*', cors(corsOpts));
 app.use(helmet());
 app.use(express.json());
 
