@@ -15,14 +15,16 @@ export default function TwoFactor() {
   const verify = useMutation({
     mutationFn: () => {
       console.log('Temp token:', temp);
-      return fetch('/api/auth/2fa/verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${temp}`,
-        },
-        body: JSON.stringify({ code }),
-      }).then(r => r.json());
+      return import('../api/api').then(({ apiFetch }) =>
+        apiFetch('/api/auth/2fa/verify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${temp}`,
+          },
+          body: JSON.stringify({ code }),
+        })
+      ).then(r => r.json());
     },
     onSuccess: ({ token, error }) => {
       if (token) {

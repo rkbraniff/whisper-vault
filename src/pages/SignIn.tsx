@@ -28,11 +28,13 @@ export default function SignIn() {
   }
   const login = useMutation({
     mutationFn: () =>
-      fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      }).then(r => r.json()),
+      import('../api/api').then(({ apiFetch }) =>
+        apiFetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form),
+        })
+      ).then(r => r.json()),
     onSuccess: (data) => {
       if (data.error === 'Please confirm your email before logging in.') {
         setShowResend(true);
@@ -54,17 +56,21 @@ export default function SignIn() {
     mutationFn: () => {
       console.log('2FA tempToken:', tempToken);
       if (twoFAMethod === 'sms') {
-        return fetch('/api/auth/2fa/verify-sms', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tempToken}` },
-          body: JSON.stringify({ code: twoFACode }),
-        }).then(r => r.json());
+        return import('../api/api').then(({ apiFetch }) =>
+          apiFetch('/api/auth/2fa/verify-sms', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tempToken}` },
+            body: JSON.stringify({ code: twoFACode }),
+          })
+        ).then(r => r.json());
       } else {
-        return fetch('/api/auth/2fa/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tempToken}` },
-          body: JSON.stringify({ code: twoFACode }),
-        }).then(r => r.json());
+        return import('../api/api').then(({ apiFetch }) =>
+          apiFetch('/api/auth/2fa/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tempToken}` },
+            body: JSON.stringify({ code: twoFACode }),
+          })
+        ).then(r => r.json());
       }
     },
     onSuccess: (data) => {
@@ -80,7 +86,8 @@ export default function SignIn() {
   async function sendSmsCode() {
     setSmsLoading(true);
     setError('');
-    const res = await fetch('/api/auth/2fa/send-sms', {
+    const { apiFetch } = await import('../api/api');
+    const res = await apiFetch('/api/auth/2fa/send-sms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tempToken}` },
     });
@@ -94,7 +101,8 @@ export default function SignIn() {
   }
 
   async function resendConfirmation() {
-    await fetch('/api/auth/resend-confirmation', {
+    const { apiFetch } = await import('../api/api');
+    await apiFetch('/api/auth/resend-confirmation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: form.email }),

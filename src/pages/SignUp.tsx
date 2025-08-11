@@ -36,11 +36,13 @@ export default function SignUp() {
 
   const register = useMutation({
     mutationFn: () =>
-      fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(trimForm(form)),
-      }).then(r => r.json()),
+      import('../api/api').then(({ apiFetch }) =>
+        apiFetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(trimForm(form)),
+        })
+      ).then(r => r.json()),
     onSuccess: ({ error, message, status }: any) => {
       if (error) {
         setError(error);
@@ -68,11 +70,13 @@ export default function SignUp() {
         {showResend && (
           <button
             onClick={() => {
-              fetch('/api/auth/resend-confirmation', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: form.email }),
-              });
+              import('../api/api').then(({ apiFetch }) =>
+                apiFetch('/api/auth/resend-confirmation', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ email: form.email }),
+                })
+              );
               setShowResend(false);
             }}
             className="w-full bg-gray-700 text-white p-3 rounded"

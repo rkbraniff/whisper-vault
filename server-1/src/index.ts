@@ -21,7 +21,13 @@ const io = new SocketIOServer(server, {
 });
 
 app.use(cors({
-    origin: process.env.CLIENT_ORIGIN || 'https://whisper-vault-al0bunu88m-rkbraniffs-projects.vercel.app',
+    origin: process.env.CLIENT_ORIGIN?.split(',') || [
+      'https://whisper-vault-al0bunu88m-rkbraniffs-projects.vercel.app',
+      'https://whisper-vault.vercel.app',
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:5175'
+    ],
     credentials: true
 }));
 app.use(helmet());
