@@ -3,6 +3,26 @@ import express, { Request, Response, NextFunction } from 'express';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import cors from 'cors';
+
+// --- Robust CORS allowlist logic ---
+const allowList = (process.env.CLIENT_ORIGIN ?? '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+// matches: https://whisper-vault-<preview>-rkbraniffs-projects.vercel.app
+const vercelPreview = /^https:\/\/whisper-vault-[\w-]+-rkbraniffs-projects\.vercel\.app$/;
+const corsOrigin: cors.CorsOptions['origin'] = (origin, cb) => {
+  if (!origin) return cb(null, true); // allow curl/postman
+  if (allowList.includes(origin)) return cb(null, true);
+  if (vercelPreview.test(origin)) return cb(null, true);
+  cb(new Error(`CORS blocked: ${origin}`));
+};
+const corsOpts: cors.CorsOptions = {
+  origin: corsOrigin,
+  credentials: true,
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization']
+};
 import helmet from 'helmet';
 import { authRouter } from './routes/auth.js';
 import { messagesRouter } from './routes/messages.js';
@@ -14,22 +34,16 @@ import { registerChatHandlers } from './sockets/chat.js';
 const app = express();
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
-    cors: {
-        origin: process.env.CLIENT_ORIGIN || 'https://whisper-vault-al0bunu88m-rkbraniffs-projects.vercel.app',
-        methods: ['GET', 'POST'],
-    },
+  cors: {
+    origin: corsOrigin as any,
+    methods: ['GET', 'POST'],
+    credentials: true
+  },
 });
 
-app.use(cors({
-    origin: process.env.CLIENT_ORIGIN?.split(',') || [
-      'https://whisper-vault-al0bunu88m-rkbraniffs-projects.vercel.app',
-      'https://whisper-vault.vercel.app',
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://localhost:5175'
-    ],
-    credentials: true
-}));
+app.use(cors(corsOpts));
+// make sure preflight gets the headers even on unmatched routes
+app.options('*', cors(corsOpts));
 app.use(helmet());
 app.use(express.json());
 
