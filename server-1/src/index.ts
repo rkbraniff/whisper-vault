@@ -35,7 +35,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
-    origin: corsOrigin as any,
+    origin: (origin, callback) => callback(null, true), // Allow all origins for Socket.IO (or implement allowList logic here if needed)
     methods: ['GET', 'POST'],
     credentials: true
   },
