@@ -15,6 +15,7 @@ const allowList = (process.env.CLIENT_ORIGIN ?? '')
 const vercelPreview = /^https:\/\/whisper-vault-[\w-]+-rkbraniffs-projects\.vercel\.app$/;
 
 const corsOrigin: cors.CorsOptions['origin'] = (origin, cb) => {
+  console.log('[CORS preflight] origin:', origin);
   if (!origin) return cb(null, true); // curl/Postman
   const ok = allowList.includes(origin) || vercelPreview.test(origin);
   if (ok) return cb(null, origin);     // <-- echo the exact origin
