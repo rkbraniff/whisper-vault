@@ -4,24 +4,29 @@ import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import cors from 'cors';
 
-// --- Robust CORS allowlist logic ---
+// --- CORS allowlist ---
 const allowList = (process.env.CLIENT_ORIGIN ?? '')
   .split(',')
   .map(s => s.trim())
   .filter(Boolean);
-// matches: https://whisper-vault-<preview>-rkbraniffs-projects.vercel.app
+
+// Matches preview URLs like:
+// https://whisper-vault-<anything>-rkbraniffs-projects.vercel.app
 const vercelPreview = /^https:\/\/whisper-vault-[\w-]+-rkbraniffs-projects\.vercel\.app$/;
+
 const corsOrigin: cors.CorsOptions['origin'] = (origin, cb) => {
-  if (!origin) return cb(null, true); // allow curl/postman
-  if (allowList.includes(origin)) return cb(null, true);
-  if (vercelPreview.test(origin)) return cb(null, true);
-  cb(new Error(`CORS blocked: ${origin}`));
+  if (!origin) return cb(null, true); // curl/Postman
+  const ok = allowList.includes(origin) || vercelPreview.test(origin);
+  if (ok) return cb(null, origin);     // <-- echo the exact origin
+  return cb(new Error(`CORS blocked: ${origin}`));
 };
+
 const corsOpts: cors.CorsOptions = {
   origin: corsOrigin,
   credentials: true,
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization']
+  allowedHeaders: ['Content-Type','Authorization'],
+  optionsSuccessStatus: 204
 };
 import helmet from 'helmet';
 import { authRouter } from './routes/auth.js';
