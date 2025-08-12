@@ -1,112 +1,56 @@
-import { Router } from 'express';
-import { prisma } from '../lib/prisma.js';
+
+import { createContactSchema, updateContactSchema } from '../validators/contact.js';
+import { listContacts, getContact, createContact, updateContact, deleteContact } from '../services/contacts.js';
 import { requireAuth } from '../middleware/auth.js';
-import { z } from 'zod';
+import { Router } from 'express';
 
-const r = Router();
-r.use(requireAuth);
+export const contactsRouter = Router();
 
-const phoneE164 = z.string().regex(/^\+\d{7,15}$/);
-const emailStr = z.string().email();
+contactsRouter.use(requireAuth);
 
-const createSchema = z.object({
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  note: z.string().optional(),
-  publicKey: z.string().optional(),
-  emails: z.array(emailStr).default([]),
-  phones: z.array(z.object({ e164: phoneE164, label: z.string().optional() })).default([]),
-});
-
-r.get('/', async (req, res, next) => {
+// GET /api/contacts?q=term
+contactsRouter.get('/', async (req: any, res, next) => {
   try {
-    const userId = req.user!.id;
-    const q = (req.query.query as string | undefined)?.trim();
-    const page = Number(req.query.page ?? 1);
-    const pageSize = Math.min(Number(req.query.pageSize ?? 20), 100);
-    const skip = (page - 1) * pageSize;
-
-    const where = q ? {
-      ownerId: userId,
-      OR: [
-        { firstName: { contains: q, mode: 'insensitive' } },
-        { lastName:  { contains: q, mode: 'insensitive' } },
-        { emails: { some: { email: { contains: q, mode: 'insensitive' } } } },
-        { phones: { some: { e164:  { contains: q } } } },
-      ],
-    } : { ownerId: userId };
-
-    const [items, total] = await Promise.all([
-      prisma.Contact.findMany({
-        where, skip, take: pageSize,
-        include: { emails: true, phones: true },
-        orderBy: { updatedAt: 'desc' },
-      }),
-      prisma.Contact.count({ where }),
-    ]);
-
-    res.json({ items, total, page, pageSize });
+    const q = typeof req.query.q === 'string' ? req.query.q : undefined;
+    const rows = await listContacts(req.user.id, q);
+    res.json(rows);
   } catch (err) { next(err); }
 });
 
-r.post('/', async (req, res, next) => {
+// GET /api/contacts/:id
+contactsRouter.get('/:id', async (req: any, res, next) => {
   try {
-    const userId = req.user!.id;
-    const body = createSchema.parse(req.body);
-
-    const created = await prisma.Contact.create({
-      data: {
-        ownerId: userId,
-        firstName: body.firstName,
-        lastName: body.lastName,
-        note: body.note,
-        publicKey: body.publicKey,
-        emails: { create: body.emails.map(email => ({ email })) },
-        phones: { create: body.phones.map(p => ({ e164: p.e164, label: p.label })) },
-      },
-      include: { emails: true, phones: true },
-    });
-
-    res.status(201).json(created);
+    const row = await getContact(req.user.id, req.params.id);
+    if (!row) return res.status(404).json({ error: 'not_found' });
+    res.json(row);
   } catch (err) { next(err); }
 });
 
-r.put('/:id', async (req, res, next) => {
+// POST /api/contacts
+contactsRouter.post('/', async (req: any, res, next) => {
   try {
-    const userId = req.user!.id;
-    const id = req.params.id;
-    const body = createSchema.partial().parse(req.body);
-
-    // Replace emails/phones if provided
-    const updated = await prisma.Contact.update({
-      where: { id, ownerId: userId },
-      data: {
-        firstName: body.firstName,
-        lastName: body.lastName,
-        note: body.note,
-        publicKey: body.publicKey,
-        ...(body.emails ? {
-          emails: { deleteMany: {}, create: body.emails.map(email => ({ email })) }
-        } : {}),
-        ...(body.phones ? {
-          phones: { deleteMany: {}, create: body.phones.map(p => ({ e164: p.e164, label: p.label })) }
-        } : {}),
-      },
-      include: { emails: true, phones: true },
-    });
-
-    res.json(updated);
+    const parsed = createContactSchema.parse(req.body);
+    const row = await createContact(req.user.id, parsed);
+    res.status(201).json(row);
   } catch (err) { next(err); }
 });
 
-r.delete('/:id', async (req, res, next) => {
+// PUT /api/contacts/:id
+contactsRouter.put('/:id', async (req: any, res, next) => {
   try {
-    const userId = req.user!.id;
-    const id = req.params.id;
+    const parsed = updateContactSchema.parse(req.body);
+    const row = await updateContact(req.user.id, req.params.id, parsed);
+    if (!row) return res.status(404).json({ error: 'not_found' });
+    res.json(row);
+  } catch (err) { next(err); }
+});
 
-    await prisma.contact.delete({ where: { id, ownerId: userId } as any });
+// DELETE /api/contacts/:id
+contactsRouter.delete('/:id', async (req: any, res, next) => {
+  try {
+    const existing = await getContact(req.user.id, req.params.id);
+    if (!existing) return res.status(404).json({ error: 'not_found' });
+    await deleteContact(req.user.id, req.params.id);
     res.status(204).end();
   } catch (err) { next(err); }
 });
-
-export const contactsRouter = r;

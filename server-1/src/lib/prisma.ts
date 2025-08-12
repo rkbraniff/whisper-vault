@@ -1,5 +1,3 @@
-
-
 import { PrismaClient } from '@prisma/client';
 import { withAccelerate } from '@prisma/extension-accelerate';
 
@@ -9,7 +7,7 @@ const useAccelerate = url.startsWith('prisma://') || url.startsWith('prisma+post
 let prisma: PrismaClient;
 if (useAccelerate) {
 	// Use Accelerate in prod, but cast to PrismaClient for type safety
-	prisma = new PrismaClient().$extends(withAccelerate()) as PrismaClient;
+	prisma = new PrismaClient().$extends(withAccelerate()) as unknown as PrismaClient;
 } else {
 	prisma = new PrismaClient();
 }
