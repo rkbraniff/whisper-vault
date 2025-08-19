@@ -28,7 +28,8 @@ model User {
   threads           Thread[] @relation("ThreadParticipants")
   contacts          User[]   @relation("UserContacts") // Users this user has added as contacts
   contactOf         User[]   @relation("UserContacts") // Users who have added this user as a contact
-  contactsOwned     Contact[] // Contacts owned by this user
+  contactsOwned     Contact[] @relation("ContactOwner") // Contacts owned by this user
+  linkedContacts    Contact[] @relation("ContactLinkedUser") // Contacts that reference this User (i.e., app users represented by contacts)
 }
 
 model Message {
@@ -59,6 +60,7 @@ model Thread {
 model Contact {
   id        String   @id @default(uuid())
   ownerId   String   // User who owns this contact (fk to your User model)
+  userId    String?  // Optional link to an app User record when this contact represents another app user
   firstName String?
   lastName  String?
   note      String?
@@ -66,11 +68,13 @@ model Contact {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner     User     @relation("ContactOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  user      User?    @relation("ContactLinkedUser", fields: [userId], references: [id], onDelete: SetNull)
   emails    ContactEmail[]
   phones    ContactPhone[]
 
   @@index([ownerId, lastName, firstName])
+  @@index([userId])
 }
 
 model ContactEmail {
