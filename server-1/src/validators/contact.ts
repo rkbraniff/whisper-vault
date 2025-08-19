@@ -16,6 +16,7 @@ export const createContactSchema = z.object({
   note: z.string().max(2000).optional(),
   emails: z.array(contactEmailSchema).max(10).optional(),
   phones: z.array(contactPhoneSchema).max(10).optional(),
+  userId: z.string().uuid().optional(),
 });
 
 export const updateContactSchema = createContactSchema.partial();

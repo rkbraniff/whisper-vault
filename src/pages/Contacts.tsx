@@ -15,10 +15,20 @@ const fetchContacts = async ({ queryKey }: { queryKey: [string, string] }) => {
   return res.data;
 };
 
+type UserItem = { id: string; firstName?: string | null; lastName?: string | null; email: string; phone?: string | null; avatarUrl?: string | null };
+type UsersResponse = { items: UserItem[]; total: number; page?: number; pageSize?: number };
+
+const fetchUsers = async (q: string, page: number, pageSize: number): Promise<UsersResponse> => {
+  const res = await axios.get('/api/users/search', { params: { q, page, pageSize } });
+  return res.data as UsersResponse;
+};
+
 export default function Contacts() {
   const [search, setSearch] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ firstName: '', lastName: '', emails: [''], phones: [''] });
+  const [userSearch, setUserSearch] = useState('');
+  const [userPage, setUserPage] = useState(1);
   const queryClient = useQueryClient();
 
 
@@ -27,6 +37,11 @@ export default function Contacts() {
     queryFn: fetchContacts
   });
 
+  const { data: userResults, isLoading: usersLoading } = useQuery<UsersResponse, Error>({
+    queryKey: ['users', userSearch, userPage, 20],
+    queryFn: () => fetchUsers(userSearch, userPage, 20),
+    enabled: userSearch.length > 0,
+  });
 
   const addContact = useMutation({
     mutationFn: async (body: any) => {
@@ -35,6 +50,17 @@ export default function Contacts() {
     onSuccess: () => {
       setShowAdd(false);
       queryClient.invalidateQueries({ queryKey: ['contacts'] });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    }
+  });
+
+  const addUserAsContact = useMutation({
+    mutationFn: async (userId: string) => {
+      return axios.post('/api/contacts', { userId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contacts'] });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
     }
   });
 
@@ -47,9 +73,37 @@ export default function Contacts() {
         value={search}
         onChange={e => setSearch(e.target.value)}
       />
-      <button className="mb-4 px-4 py-2 bg-blue-600 text-white rounded" onClick={() => setShowAdd(true)}>
-        Add Contact
-      </button>
+      <div className="flex gap-2 mb-4">
+        <button className="px-4 py-2 bg-blue-600 text-white rounded" onClick={() => setShowAdd(true)}>
+          Add Contact
+        </button>
+        <input className="border p-2 w-full" placeholder="Find users to add..." value={userSearch} onChange={e => { setUserSearch(e.target.value); setUserPage(1); }} />
+      </div>
+
+      {userSearch.length > 0 ? (
+        <div className="mb-4">
+          {usersLoading ? <div>Searching...</div> : (
+            <div>
+              {(userResults as any)?.items?.map((u: any) => (
+                <div key={u.id} className="flex items-center justify-between border p-2 mb-2">
+                  <div>
+                    <div className="font-semibold">{u.firstName} {u.lastName}</div>
+                    <div className="text-sm text-gray-600">{u.email} {u.phone ? `• ${u.phone}` : ''}</div>
+                  </div>
+                  <div>
+                    <button className="px-3 py-1 bg-green-600 text-white rounded" onClick={() => addUserAsContact.mutate(u.id)}>Add</button>
+                  </div>
+                </div>
+              ))}
+              <div className="flex gap-2 mt-2">
+                <button disabled={userPage <= 1} onClick={() => setUserPage(p => Math.max(1, p - 1))} className="px-3 py-1 bg-gray-200 rounded">Prev</button>
+                <button disabled={(userResults?.total ?? 0) <= userPage * 20} onClick={() => setUserPage(p => p + 1)} className="px-3 py-1 bg-gray-200 rounded">Next</button>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : null}
+
       {isLoading ? <div>Loading...</div> : (
         <table className="w-full border">
           <thead>
