@@ -8,6 +8,7 @@ import TwoFactor from './pages/TwoFactor';
 import NavBar from './components/NavBar';
 import SignIn from './pages/SignIn';
 import ConfirmEmail from './pages/ConfirmEmail';
+import Contacts from './pages/Contacts';
 
 export default function App() {
   // Use different basename for Vercel vs GitHub Pages
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/thread/:id" element={<ThreadView messages={[]} userId={null} />} />
           <Route path="/messenger" element={<Messenger />} />
+          <Route path="/contacts" element={<Contacts />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/2fa" element={<TwoFactor />} />
           <Route path="/signin" element={<SignIn />} />
